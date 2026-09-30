@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Twórca – Velorie Store</title>
+  <meta name="theme-color" content="#0a1030" />
+  <link rel="icon" type="image/png" href="https://i.imgur.com/NDhlWyz.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="/assets/css/velorie.css" />
+</head>
+<body class="min-h-screen">
+  <div id="vs-header"></div>
+  <main class="relative z-10 mx-auto max-w-7xl px-4 py-10" id="root"><div class="skeleton h-48"></div></main>
+  <div id="vs-footer"></div>
+  <script src="/assets/js/app.js"></script>
+  <script>
+    VS.layout({});
+    const { esc, fmt } = VS;
+    const slug = decodeURIComponent((location.pathname.match(/^\/tworca\/([^/]+)/) || [])[1] || new URLSearchParams(location.search).get('slug') || '');
+    VS.api('/api/sellers/' + encodeURIComponent(slug)).then(({ seller: s, stats, products }) => {
+      document.title = `${s.store_name} – Velorie Store`;
+      document.getElementById('root').innerHTML = `
+        <section class="relative overflow-hidden glass rounded-3xl p-6 sm:p-10">
+          <div class="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-[var(--accent2)]/25 blur-3xl"></div>
+          <div class="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-[var(--accent)]/20 blur-3xl"></div>
+          <div class="relative flex flex-col md:flex-row md:items-center gap-6">
+            ${s.avatar_url ? `<img src="${esc(s.avatar_url)}" class="h-24 w-24 rounded-3xl object-cover" alt="">` : `<span class="h-24 w-24 rounded-3xl grid place-items-center bg-gradient-to-br from-[#ff0354] to-[#7c3aed] text-4xl font-black">${esc(s.store_name[0])}</span>`}
+            <div class="flex-1">
+              <div class="flex items-center gap-2"><h1 class="text-3xl sm:text-4xl font-black">${esc(s.store_name)}</h1><i data-lucide="badge-check" class="h-6 w-6 text-[var(--accent)]"></i></div>
+              <p class="text-white/70 mt-2 max-w-2xl">${esc(s.bio || 'Twórca w Velorie Store.')}</p>
+              <div class="text-xs text-white/45 mt-2">Na Velorie od ${fmt.date(s.created_at)}${s.discord_username ? ` • Discord: ${esc(s.discord_username)}` : ''}</div>
+            </div>
+            <div class="grid grid-cols-3 gap-3 text-center">
+              <div class="glass-soft rounded-2xl px-4 py-3"><div class="text-2xl font-black">${stats.products}</div><div class="text-[11px] text-white/50">produktów</div></div>
+              <div class="glass-soft rounded-2xl px-4 py-3"><div class="text-2xl font-black">${fmt.num(stats.sales)}</div><div class="text-[11px] text-white/50">sprzedaży</div></div>
+              <div class="glass-soft rounded-2xl px-4 py-3"><div class="text-2xl font-black">${stats.rating ? Number(stats.rating).toFixed(1) : '–'}</div><div class="text-[11px] text-white/50">${stats.reviews} ocen</div></div>
+            </div>
+          </div>
+        </section>
+        <h2 class="text-2xl font-black mt-10 mb-5">Produkty</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">${products.map(VS.productCard).join('') || '<p class="text-white/60">Brak produktów.</p>'}</div>`;
+      VS.icons(); VS.reveal();
+    }).catch(() => {
+      document.getElementById('root').innerHTML = '<div class="glass rounded-2xl p-12 text-center"><h1 class="text-2xl font-black">Nie znaleziono twórcy</h1><a href="/sklep.html" class="inline-flex mt-6 rounded-xl btn-primary px-5 py-3 text-sm font-semibold">Wróć do sklepu</a></div>';
+    });
+  </script>
+</body>
+</html>

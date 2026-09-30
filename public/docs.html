@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>API licencji – Velorie Store</title>
+  <meta name="theme-color" content="#0a1030" />
+  <link rel="icon" type="image/png" href="https://i.imgur.com/NDhlWyz.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="/assets/css/velorie.css" />
+</head>
+<body class="min-h-screen">
+  <div id="vs-header"></div>
+  <main class="relative z-10 mx-auto max-w-5xl px-4 py-10 space-y-8">
+    <div>
+      <span class="chip active"><i data-lucide="key-round" class="h-3 w-3"></i>Dla twórców</span>
+      <h1 class="text-4xl font-black mt-3">API licencji</h1>
+      <p class="text-white/65 mt-2 max-w-3xl">Każdy zakup w Velorie Store generuje klucz <span class="font-mono text-white">VEL-XXXX-XXXX-XXXX-XXXX</span>. Twój plugin, skrypt lub mod sprawdza go przy starcie — jeśli klucz jest nieważny, unieważniony albo przekroczono limit serwerów, zasób się wyłącza.</p>
+    </div>
+
+    <section class="glass rounded-3xl p-6 space-y-4">
+      <h2 class="text-xl font-bold">Weryfikacja klucza</h2>
+      <div class="flex flex-wrap items-center gap-2 font-mono text-sm"><span class="badge badge-green">POST</span><span id="endpoint" class="break-all"></span></div>
+      <div class="table-wrap"><table class="table">
+        <thead><tr><th>Pole</th><th>Typ</th><th>Opis</th></tr></thead>
+        <tbody>
+          <tr><td class="font-mono">license_key</td><td>string</td><td>Klucz klienta (wymagany)</td></tr>
+          <tr><td class="font-mono">product_id</td><td>number</td><td>ID Twojego produktu — zalecane, blokuje użycie klucza z innego produktu. Znajdziesz je w panelu twórcy.</td></tr>
+          <tr><td class="font-mono">identifier</td><td>string</td><td>Stały identyfikator serwera (np. IP:port, adres cfx). Każdy nowy identyfikator zużywa 1 aktywację. Domyślnie: IP.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div><div class="label">Odpowiedź — poprawna</div><pre class="code">{
+  "valid": true,
+  "license": {
+    "product_id": 12,
+    "product": "Advanced Garage System",
+    "latest_version": "1.2.0",
+    "owner": "GraczDemo",
+    "activations": 1,
+    "max_activations": 2
+  }
+}</pre></div>
+        <div><div class="label">Odpowiedź — błąd</div><pre class="code">{
+  "valid": false,
+  "reason": "activation_limit",
+  "message": "Osiągnięto limit aktywacji (2)…"
+}
+
+// reason: missing_key | not_found |
+//         wrong_product | revoked |
+//         activation_limit</pre></div>
+      </div>
+      <p class="text-xs text-white/50">API zawsze zwraca status 200 z polem <span class="font-mono">valid</span> (429 przy nadmiarze zapytań — limit 120/min na IP). Klient może zwolnić aktywację: <span class="font-mono">POST /api/v1/licenses/deactivate</span> z tymi samymi polami.</p>
+    </section>
+
+    <section class="glass rounded-3xl p-6">
+      <h2 class="text-xl font-bold mb-4">Przykłady integracji</h2>
+      <div class="flex gap-1 p-1 rounded-2xl bg-black/30 border border-white/10 mb-4 overflow-x-auto" id="tabs"></div>
+      <div class="relative"><button id="copy-code" class="absolute right-3 top-3 rounded-lg btn-ghost px-2.5 py-1.5 text-xs inline-flex items-center gap-1"><i data-lucide="copy" class="h-3.5 w-3.5"></i>Kopiuj</button><pre class="code" id="code"></pre></div>
+    </section>
+
+    <section class="grid md:grid-cols-3 gap-4">
+      <div class="glass rounded-2xl p-5"><i data-lucide="shield" class="h-5 w-5 text-[var(--accent)]"></i><div class="font-bold mt-3">Nie ufaj klientowi</div><p class="text-sm text-white/60 mt-1">W FiveM weryfikuj tylko w <b>server.lua</b>. W Javie zaciemnij kod (np. ProGuard).</p></div>
+      <div class="glass rounded-2xl p-5"><i data-lucide="wifi-off" class="h-5 w-5 text-[var(--accent)]"></i><div class="font-bold mt-3">Tryb offline</div><p class="text-sm text-white/60 mt-1">Jeśli API jest nieosiągalne, możesz pozwolić na start z ostatnim poprawnym wynikiem z cache (np. 24h).</p></div>
+      <div class="glass rounded-2xl p-5"><i data-lucide="refresh-cw" class="h-5 w-5 text-[var(--accent)]"></i><div class="font-bold mt-3">Aktualizacje</div><p class="text-sm text-white/60 mt-1">Porównaj <span class="font-mono">latest_version</span> z wersją pluginu i pokaż w konsoli informację o update.</p></div>
+    </section>
+  </main>
+  <div id="vs-footer"></div>
+  <script src="/assets/js/app.js"></script>
+  <script>
+    VS.layout({ active: 'API licencji' });
+    const API = location.origin + '/api/v1/licenses/verify';
+    document.getElementById('endpoint').textContent = API;
+    const SNIPPETS = {
+      'Java (Spigot/Paper)': `import java.net.URI;
+import java.net.http.*;
+import java.time.Duration;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.java.JavaPlugin;
+
+public final class MyPlugin extends JavaPlugin {
+    private static final String API = "${API}";
+    private static final int PRODUCT_ID = 1; // ID produktu z panelu twórcy
+
+    @Override
+    public void onEnable() {
+        saveDefaultConfig();
+        String key = getConfig().getString("license-key", "");
+        if (!verifyLicense(key)) {
+            getLogger().severe("Nieprawidłowa licencja Velorie! Wyłączam plugin.");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
+        getLogger().info("Licencja Velorie aktywna.");
+    }
+
+    private boolean verifyLicense(String key) {
+        try {
+            String id = Bukkit.getServer().getIp() + ":" + Bukkit.getServer().getPort();
+            String body = String.format("{\\"license_key\\":\\"%s\\",\\"product_id\\":%d,\\"identifier\\":\\"%s\\"}", key, PRODUCT_ID, id);
+            HttpRequest req = HttpRequest.newBuilder(URI.create(API))
+                .timeout(Duration.ofSeconds(10))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(body)).build();
+            HttpResponse<String> res = HttpClient.newHttpClient().send(req, HttpResponse.BodyHandlers.ofString());
+            return res.statusCode() == 200 && res.body().contains("\\"valid\\":true");
+        } catch (Exception e) {
+            getLogger().warning("Nie można połączyć z Velorie: " + e.getMessage());
+            return false;
+        }
+    }
+}`,
+      'Lua (FiveM)': `-- server.lua  (fxmanifest: server_script 'server.lua')
+-- W server.cfg:  set velorie_license "VEL-XXXX-XXXX-XXXX-XXXX"
+local API = '${API}'
+local PRODUCT_ID = 1 -- ID produktu z panelu twórcy
+
+CreateThread(function()
+    local payload = json.encode({
+        license_key = GetConvar('velorie_license', ''),
+        product_id = PRODUCT_ID,
+        identifier = GetConvar('web_baseUrl', GetConvar('sv_hostname', 'fivem'))
+    })
+
+    PerformHttpRequest(API, function(status, body)
+        local data = body and json.decode(body) or {}
+        if status ~= 200 or not data.valid then
+            print(('^1[Velorie] Licencja nieprawidłowa: %s^0'):format(data.message or 'brak połączenia'))
+            StopResource(GetCurrentResourceName())
+            return
+        end
+        print(('^2[Velorie] Licencja aktywna (%s)^0'):format(data.license.owner))
+    end, 'POST', payload, { ['Content-Type'] = 'application/json' })
+end)`,
+      'JavaScript (Node)': `const API = '${API}';
+
+async function verifyLicense(key, productId, identifier) {
+  const res = await fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ license_key: key, product_id: productId, identifier }),
+  });
+  const data = await res.json();
+  if (!data.valid) throw new Error(data.message);
+  return data.license;
+}
+
+verifyLicense(process.env.VELORIE_LICENSE, 1, require('os').hostname())
+  .then((l) => console.log('Licencja OK dla', l.owner))
+  .catch((e) => { console.error('Licencja:', e.message); process.exit(1); });`,
+      'Python': `import requests, socket
+
+API = "${API}"
+
+def verify_license(key: str, product_id: int) -> bool:
+    r = requests.post(API, json={
+        "license_key": key,
+        "product_id": product_id,
+        "identifier": socket.gethostname(),
+    }, timeout=10)
+    data = r.json()
+    if not data.get("valid"):
+        print("Licencja nieprawidłowa:", data.get("message"))
+        return False
+    return True`,
+      'cURL': `curl -X POST ${API} \\
+  -H "Content-Type: application/json" \\
+  -d '{"license_key":"VEL-XXXX-XXXX-XXXX-XXXX","product_id":1,"identifier":"srv-1"}'`,
+    };
+    const tabs = document.getElementById('tabs');
+    const show = (name) => {
+      document.getElementById('code').textContent = SNIPPETS[name];
+      tabs.querySelectorAll('button').forEach((b) => b.className = `rounded-xl px-4 py-2 text-sm font-semibold whitespace-nowrap ${b.textContent === name ? 'btn-primary' : 'text-white/60 hover:text-white'}`);
+    };
+    tabs.innerHTML = Object.keys(SNIPPETS).map((n) => `<button>${n}</button>`).join('');
+    tabs.querySelectorAll('button').forEach((b) => b.onclick = () => show(b.textContent));
+    show('Java (Spigot/Paper)');
+    document.getElementById('copy-code').onclick = () => VS.copy(document.getElementById('code').textContent);
+  </script>
+</body>
+</html>

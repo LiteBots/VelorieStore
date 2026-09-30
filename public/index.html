@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Velorie Store – Pluginy, skrypty FiveM, mapy Minecraft i mody z licencją</title>
+  <meta name="description" content="Velorie Store to marketplace dla twórców i graczy: pluginy Minecraft, skrypty i interiory FiveM, mapy, mody i więcej — z wbudowanym systemem licencji." />
+  <meta name="theme-color" content="#0a1030" />
+  <link rel="icon" type="image/png" href="https://i.imgur.com/NDhlWyz.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="/assets/css/velorie.css" />
+  <style>
+    .particle{ animation: particle 12s ease-in-out infinite; }
+    @keyframes particle{ 0%,100%{ transform: translate(0,0) } 50%{ transform: translate(5%,-10%) rotate(20deg) } }
+    .perspective-container{ perspective: 1500px; }
+    #store-mockup{ transform-style: preserve-3d; animation: rot 15s ease-in-out infinite; transform: rotateX(5deg) rotateY(-8deg); }
+    @keyframes rot{ 0%,100%{ transform: rotateX(5deg) rotateY(-8deg) } 50%{ transform: rotateX(-5deg) rotateY(8deg) } }
+    @media (prefers-reduced-motion: reduce){ #store-mockup, .particle{ animation:none } }
+  </style>
+</head>
+<body class="min-h-screen selection:bg-[#ff0354]/40 selection:text-white">
+  <div id="vs-header"></div>
+
+  <main class="relative z-10">
+    <!-- HERO -->
+    <section id="hero" class="relative overflow-hidden">
+      <div id="particles" aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden"></div>
+      <div class="mx-auto max-w-7xl px-4 py-16 sm:py-20 md:py-24 grid lg:grid-cols-2 gap-10 items-center">
+        <div class="space-y-6">
+          <span class="inline-flex flex-wrap items-center gap-2 rounded-full glass-soft px-3 py-1 text-[11px] sm:text-xs text-white/80">
+            <i data-lucide="sparkles" class="h-3 w-3"></i>
+            <span>Licencje • Natychmiastowe pobieranie • Aktualizacje</span>
+          </span>
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.05]">
+            <span class="block">Sklep dla twórców</span>
+            <span class="block text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60">i graczy z pasją</span>
+          </h1>
+          <p class="max-w-xl text-white/70">
+            Kupuj pluginy Minecraft, skrypty i interiory FiveM, mapy, mody i wiele więcej.
+            Twórcy sprzedają swoje produkty, a każdy zakup dostaje unikalny klucz licencji chroniony przez API Velorie.
+          </p>
+          <form action="/sklep.html" class="flex max-w-xl gap-2">
+            <div class="relative flex-1">
+              <i data-lucide="search" class="h-4 w-4 absolute left-4 top-1/2 -translate-y-1/2 text-white/40"></i>
+              <input name="q" class="field !py-3.5 !pl-10 !rounded-2xl" placeholder="Np. garaż, lobby, anticheat…" />
+            </div>
+            <button class="inline-flex items-center gap-2 rounded-2xl btn-primary lift px-5 text-sm font-semibold"><span>Szukaj</span></button>
+          </form>
+          <div class="flex flex-wrap items-center gap-3">
+            <a href="/sklep.html" class="inline-flex items-center gap-2 rounded-2xl btn-primary lift px-5 py-3 text-sm font-semibold"><i data-lucide="store" class="h-4 w-4"></i>Przeglądaj sklep</a>
+            <a href="/panel.html#/seller/join" class="inline-flex items-center gap-2 rounded-2xl btn-ghost lift px-5 py-3 text-sm font-semibold"><i data-lucide="rocket" class="h-4 w-4"></i>Zacznij sprzedawać</a>
+          </div>
+          <div id="stats" class="grid grid-cols-3 gap-3 max-w-md pt-2">
+            <div class="glass-soft rounded-2xl p-3"><div class="text-2xl font-black" data-stat="products">–</div><div class="text-[11px] text-white/55">produktów</div></div>
+            <div class="glass-soft rounded-2xl p-3"><div class="text-2xl font-black" data-stat="creators">–</div><div class="text-[11px] text-white/55">twórców</div></div>
+            <div class="glass-soft rounded-2xl p-3"><div class="text-2xl font-black" data-stat="sales">–</div><div class="text-[11px] text-white/55">sprzedaży</div></div>
+          </div>
+        </div>
+
+        <div class="animate-on-scroll perspective-container hidden sm:block">
+          <div id="store-mockup" class="relative mx-auto w-full max-w-xl">
+            <div class="absolute -inset-4 -z-10 rounded-[2rem] bg-[conic-gradient(from_180deg_at_50%_50%,rgba(255,3,84,0.35),transparent,rgba(124,58,237,0.35),transparent)] blur-2xl"></div>
+            <div class="relative rounded-[2rem] glass p-3">
+              <div class="rounded-[1.5rem] border border-white/10 bg-black/55 p-4">
+                <div class="flex items-center justify-between">
+                  <div class="flex gap-2"><span class="h-2.5 w-2.5 rounded-full bg-white/20"></span><span class="h-2.5 w-2.5 rounded-full bg-white/20"></span><span class="h-2.5 w-2.5 rounded-full bg-white/20"></span></div>
+                  <span class="text-xs text-white/60">velorie.store</span>
+                </div>
+                <div id="mock-products" class="mt-4 grid grid-cols-2 gap-3"></div>
+                <div class="mt-4 rounded-xl border border-white/10 bg-white/5 p-3 flex items-center gap-3">
+                  <span class="h-9 w-9 rounded-xl grid place-items-center bg-[var(--accent)]/15 text-[var(--accent)]"><i data-lucide="key-round" class="h-4 w-4"></i></span>
+                  <div class="min-w-0"><div class="text-xs text-white/60">Twój klucz licencji</div><div class="font-mono text-sm truncate">VEL-8KQ2-M7XP-4TZN-R9WD</div></div>
+                  <span class="ml-auto badge badge-green">Aktywna</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KATEGORIE -->
+    <section class="py-10">
+      <div class="mx-auto max-w-7xl px-4">
+        <div class="flex items-end justify-between gap-4 mb-6">
+          <div><h2 class="text-3xl md:text-4xl font-black">Kategorie</h2><p class="text-white/60 mt-1">Od skryptów RP po całe mapy — znajdź to, czego potrzebuje Twój serwer.</p></div>
+        </div>
+        <div id="categories" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3"></div>
+      </div>
+    </section>
+
+    <!-- POLECANE -->
+    <section class="py-10">
+      <div class="mx-auto max-w-7xl px-4">
+        <div class="flex items-end justify-between gap-4 mb-6">
+          <div><h2 class="text-3xl md:text-4xl font-black">Polecane</h2><p class="text-white/60 mt-1">Najlepiej oceniane i najchętniej kupowane produkty.</p></div>
+          <a href="/sklep.html?sort=popular" class="hidden sm:inline-flex items-center gap-2 rounded-xl btn-ghost lift px-4 py-2 text-sm">Wszystkie<i data-lucide="arrow-right" class="h-4 w-4"></i></a>
+        </div>
+        <div id="featured" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
+      </div>
+    </section>
+
+    <section class="py-10">
+      <div class="mx-auto max-w-7xl px-4">
+        <div class="flex items-end justify-between gap-4 mb-6">
+          <div><h2 class="text-3xl md:text-4xl font-black">Nowości</h2><p class="text-white/60 mt-1">Świeżo dodane przez twórców.</p></div>
+          <a href="/sklep.html?sort=new" class="hidden sm:inline-flex items-center gap-2 rounded-xl btn-ghost lift px-4 py-2 text-sm">Zobacz więcej<i data-lucide="arrow-right" class="h-4 w-4"></i></a>
+        </div>
+        <div id="newest" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
+      </div>
+    </section>
+
+    <!-- DLA TWÓRCÓW -->
+    <section id="tworcy" class="py-16 sm:py-20">
+      <div class="mx-auto max-w-7xl px-4 grid lg:grid-cols-12 gap-8 items-start">
+        <div class="lg:col-span-5 space-y-4">
+          <span class="chip active"><i data-lucide="briefcase" class="h-3 w-3"></i>Dla twórców</span>
+          <h2 class="text-3xl md:text-4xl font-black">Sprzedawaj swoje produkty. Resztą zajmiemy się my.</h2>
+          <p class="text-white/70">Wystaw plugin, skrypt, mapę czy interior w kilka minut. Velorie obsługuje płatności, dostarcza pliki, generuje klucze licencji i pokazuje Ci pełne statystyki sprzedaży.</p>
+          <ul class="space-y-3 text-sm text-white/75">
+            <li class="flex gap-2"><i data-lucide="check" class="h-5 w-5 text-[var(--accent)] shrink-0"></i>Prowizja tylko od sprzedaży — <b class="text-white" data-stat="fee_percent">10</b><b class="text-white">%</b>, bez abonamentu</li>
+            <li class="flex gap-2"><i data-lucide="check" class="h-5 w-5 text-[var(--accent)] shrink-0"></i>Wypłaty na konto bankowe, PayPal lub Revolut</li>
+            <li class="flex gap-2"><i data-lucide="check" class="h-5 w-5 text-[var(--accent)] shrink-0"></i>Limit aktywacji na serwer, unieważnianie kluczy, ręczne licencje</li>
+          </ul>
+          <a href="/panel.html#/seller/join" class="inline-flex items-center gap-2 rounded-2xl btn-primary lift px-5 py-3 text-sm font-semibold"><i data-lucide="rocket" class="h-4 w-4"></i>Otwórz swój sklep</a>
+        </div>
+        <div class="lg:col-span-7 grid sm:grid-cols-2 gap-4">
+          <div class="animate-on-scroll glass rounded-2xl p-5"><i data-lucide="chart-line" class="h-6 w-6 text-[var(--accent)]"></i><div class="font-bold mt-3">Statystyki sprzedaży</div><p class="text-sm text-white/65 mt-1">Przychód, konwersja, top produkty i wykresy dzienne w panelu biznesowym.</p></div>
+          <div class="animate-on-scroll glass rounded-2xl p-5"><i data-lucide="key-round" class="h-6 w-6 text-[var(--accent)]"></i><div class="font-bold mt-3">System licencji</div><p class="text-sm text-white/65 mt-1">Każdy zakup = unikalny klucz. Weryfikacja przez API z Java, Lua, JS czy Pythona.</p></div>
+          <div class="animate-on-scroll glass rounded-2xl p-5"><i data-lucide="ticket-percent" class="h-6 w-6 text-[var(--accent)]"></i><div class="font-bold mt-3">Kody rabatowe</div><p class="text-sm text-white/65 mt-1">Twórz kupony procentowe na cały sklep lub wybrany produkt, z limitem użyć.</p></div>
+          <div class="animate-on-scroll glass rounded-2xl p-5"><i data-lucide="git-branch" class="h-6 w-6 text-[var(--accent)]"></i><div class="font-bold mt-3">Aktualizacje i changelog</div><p class="text-sm text-white/65 mt-1">Wgraj nową wersję — kupujący od razu widzą listę zmian i pobierają update.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- JAK TO DZIAŁA -->
+    <section id="jak-to-dziala" class="py-16">
+      <div class="mx-auto max-w-7xl px-4">
+        <h2 class="text-3xl md:text-4xl font-black mb-2">Jak to działa?</h2>
+        <p class="text-white/60 mb-10 max-w-2xl">Zakup → pobranie → klucz licencji → gotowe. Bez czekania na odpowiedź twórcy.</p>
+        <div class="grid md:grid-cols-4 gap-5">
+          <div class="animate-on-scroll glass rounded-2xl p-6"><span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)]"><i data-lucide="search" class="h-5 w-5"></i></span><div class="font-bold mt-4">1) Wybierz</div><p class="text-sm text-white/65 mt-2">Filtruj po kategorii, cenie i ocenach.</p></div>
+          <div class="animate-on-scroll glass rounded-2xl p-6"><span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)]"><i data-lucide="credit-card" class="h-5 w-5"></i></span><div class="font-bold mt-4">2) Zapłać</div><p class="text-sm text-white/65 mt-2">Bezpieczna płatność, kody rabatowe twórców.</p></div>
+          <div class="animate-on-scroll glass rounded-2xl p-6"><span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)]"><i data-lucide="download" class="h-5 w-5"></i></span><div class="font-bold mt-4">3) Pobierz</div><p class="text-sm text-white/65 mt-2">Plik w bibliotece od razu i przy każdej aktualizacji.</p></div>
+          <div class="animate-on-scroll glass rounded-2xl p-6"><span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)]"><i data-lucide="key-round" class="h-5 w-5"></i></span><div class="font-bold mt-4">4) Aktywuj</div><p class="text-sm text-white/65 mt-2">Wklej klucz do configu — licencja aktywuje się na serwerze.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DISCORD -->
+    <section class="py-12">
+      <div class="mx-auto max-w-7xl px-4">
+        <div class="relative overflow-hidden rounded-3xl border border-[var(--accent)]/20 bg-gradient-to-br from-[var(--accent)]/10 to-[var(--accent2)]/10 px-6 py-10 md:px-12 animate-on-scroll glass">
+          <div class="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-[var(--accent2)]/20 blur-3xl"></div>
+          <div class="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-[var(--accent)]/20 blur-3xl"></div>
+          <div class="relative flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+            <div class="flex flex-col md:flex-row items-center gap-6">
+              <img src="https://i.imgur.com/NDhlWyz.png" alt="Velorie" class="h-20 w-auto brand-logo" />
+              <div><h2 class="text-3xl font-black md:text-4xl">Społeczność Velorie</h2><p class="mt-3 text-lg text-white/80 max-w-xl">Wsparcie, nowości od twórców i zniżki tylko dla członków Discorda.</p></div>
+            </div>
+            <a href="https://discord.gg/velorie" target="_blank" rel="noopener" class="group inline-flex items-center gap-3 rounded-2xl btn-primary lift px-8 py-4 font-bold">
+              <i data-lucide="message-square" class="h-5 w-5"></i>Dołącz na Discord<i data-lucide="arrow-right" class="h-4 w-4 group-hover:translate-x-1 transition-transform"></i></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="py-16">
+      <div class="mx-auto max-w-7xl px-4">
+        <h2 class="text-3xl md:text-4xl font-black mb-8">FAQ</h2>
+        <div class="grid lg:grid-cols-2 gap-5">
+          <div class="animate-on-scroll glass rounded-2xl p-6"><div class="flex gap-3 font-bold"><i data-lucide="key-round" class="h-5 w-5 text-[var(--accent)]"></i>Czym jest licencja?</div><p class="mt-3 text-sm text-white/70">To unikalny klucz przypisany do Twojego konta. Plugin lub skrypt sprawdza go przez API Velorie. Limit serwerów ustala twórca, a aktywacje resetujesz w panelu.</p></div>
+          <div class="animate-on-scroll glass rounded-2xl p-6"><div class="flex gap-3 font-bold"><i data-lucide="refresh-cw" class="h-5 w-5 text-[var(--accent)]"></i>Czy aktualizacje są darmowe?</div><p class="mt-3 text-sm text-white/70">Tak — po zakupie zawsze pobierasz najnowszą wersję pliku z biblioteki.</p></div>
+          <div class="animate-on-scroll glass rounded-2xl p-6"><div class="flex gap-3 font-bold"><i data-lucide="wallet" class="h-5 w-5 text-[var(--accent)]"></i>Ile kosztuje sprzedaż?</div><p class="mt-3 text-sm text-white/70">Wystawianie jest darmowe. Pobieramy prowizję od każdej sprzedaży, a resztę wypłacasz z panelu twórcy.</p></div>
+          <div class="animate-on-scroll glass rounded-2xl p-6"><div class="flex gap-3 font-bold"><i data-lucide="log-in" class="h-5 w-5 text-[var(--accent)]"></i>Jak się zalogować?</div><p class="mt-3 text-sm text-white/70">E-mailem i hasłem, kontem Google albo Discord. Metody możesz połączyć w ustawieniach konta.</p></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="vs-footer"></div>
+  <script src="/assets/js/app.js"></script>
+  <script>
+    VS.layout({ active: 'Start' });
+
+    // Cząsteczki w hero
+    (() => {
+      const c = document.getElementById('particles');
+      const n = innerWidth < 480 ? 16 : 26;
+      for (let i = 0; i < n; i++) {
+        const s = document.createElement('span');
+        const size = 18 + (i % 6) * 10;
+        s.className = 'absolute rounded-full opacity-20 blur-2xl particle';
+        s.style.cssText = `width:${size}px;height:${size}px;background:${i % 3 ? 'rgba(255,3,84,.8)' : 'rgba(124,58,237,.75)'};left:${Math.random() * 100}%;top:${Math.random() * 100}%;animation-duration:${10 + (i % 5)}s;animation-delay:${i * .2}s`;
+        c.appendChild(s);
+      }
+    })();
+
+    VS.api('/api/stats/public').then((s) => {
+      document.querySelectorAll('[data-stat]').forEach((el) => { el.textContent = VS.fmt.num(s[el.dataset.stat]); });
+    }).catch(() => {});
+
+    VS.categories().then((cats) => {
+      document.getElementById('categories').innerHTML = cats.map((c) => `
+        <a href="/sklep.html?category=${c.id}" class="animate-on-scroll glass rounded-2xl p-4 lift flex flex-col gap-3 hover:border-[var(--accent)]/40">
+          <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10"><i data-lucide="${c.icon}" class="h-5 w-5"></i></span>
+          <div><div class="font-semibold text-sm leading-tight">${VS.esc(c.name)}</div><div class="text-xs text-white/50 mt-0.5">${c.count} ${c.count === 1 ? 'produkt' : 'produktów'}</div></div>
+        </a>`).join('');
+      VS.icons(); VS.reveal();
+    });
+
+    const skel = (n) => Array.from({ length: n }, () => '<div class="skeleton h-80"></div>').join('');
+    document.getElementById('featured').innerHTML = skel(4);
+    document.getElementById('newest').innerHTML = skel(4);
+
+    VS.api('/api/products?sort=popular&limit=4').then((d) => {
+      document.getElementById('featured').innerHTML = d.items.map(VS.productCard).join('');
+      document.getElementById('mock-products').innerHTML = d.items.slice(0, 4).map((p) => `
+        <div class="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+          <img src="${VS.esc(p.cover_url)}" class="aspect-video w-full object-cover" alt="">
+          <div class="p-2 flex items-center justify-between gap-2"><span class="text-[11px] truncate">${VS.esc(p.title)}</span><span class="text-[11px] font-bold text-[var(--accent)] shrink-0">${VS.fmt.price(p.price)}</span></div>
+        </div>`).join('');
+      VS.icons(); VS.reveal();
+    });
+    VS.api('/api/products?sort=new&limit=4').then((d) => {
+      document.getElementById('newest').innerHTML = d.items.map(VS.productCard).join('');
+      VS.icons(); VS.reveal();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Sklep – Velorie Store</title>
+  <meta name="theme-color" content="#0a1030" />
+  <link rel="icon" type="image/png" href="https://i.imgur.com/NDhlWyz.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="/assets/css/velorie.css" />
+</head>
+<body class="min-h-screen">
+  <div id="vs-header"></div>
+  <main class="relative z-10 mx-auto max-w-7xl px-4 py-10">
+    <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-3xl md:text-4xl font-black" id="page-title">Sklep</h1>
+        <p class="text-white/60 mt-1" id="result-count">Ładowanie…</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="filters-toggle" class="lg:hidden inline-flex items-center gap-2 rounded-xl btn-ghost px-4 py-2.5 text-sm"><i data-lucide="sliders-horizontal" class="h-4 w-4"></i>Filtry</button>
+        <select id="sort" class="field !w-auto text-sm" aria-label="Sortowanie">
+          <option value="popular">Najpopularniejsze</option>
+          <option value="new">Najnowsze</option>
+          <option value="rating">Najlepiej oceniane</option>
+          <option value="updated">Ostatnio zaktualizowane</option>
+          <option value="price_asc">Cena: rosnąco</option>
+          <option value="price_desc">Cena: malejąco</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid lg:grid-cols-[260px_1fr] gap-6 items-start">
+      <aside id="filters" class="hidden lg:block glass rounded-2xl p-5 space-y-6 lg:sticky lg:top-24">
+        <div>
+          <label class="label" for="q">Szukaj</label>
+          <div class="relative"><i data-lucide="search" class="h-4 w-4 absolute left-3 top-3.5 text-white/40"></i><input id="q" class="field !pl-9 text-sm" placeholder="Nazwa, tag, twórca…" /></div>
+        </div>
+        <div>
+          <div class="label">Kategorie</div>
+          <div id="cat-list" class="space-y-1 text-sm"></div>
+        </div>
+        <div>
+          <div class="label">Cena (zł)</div>
+          <div class="flex items-center gap-2">
+            <input id="min" type="number" min="0" class="field text-sm" placeholder="od" />
+            <span class="text-white/40">–</span>
+            <input id="max" type="number" min="0" class="field text-sm" placeholder="do" />
+          </div>
+          <label class="mt-3 flex items-center gap-2 text-sm text-white/75 cursor-pointer"><input id="free" type="checkbox" class="check" />Tylko darmowe</label>
+        </div>
+        <button id="reset" class="w-full rounded-xl btn-ghost px-4 py-2.5 text-sm">Wyczyść filtry</button>
+      </aside>
+
+      <section>
+        <div id="active-chips" class="flex flex-wrap gap-2 mb-4"></div>
+        <div id="grid" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+        <div id="pager" class="mt-8 flex justify-center gap-2"></div>
+      </section>
+    </div>
+  </main>
+  <div id="vs-footer"></div>
+
+  <script src="/assets/js/app.js"></script>
+  <script>
+    VS.layout({ active: 'Sklep' });
+    const $ = (id) => document.getElementById(id);
+    const params = new URLSearchParams(location.search);
+    const state = {
+      q: params.get('q') || '', category: (params.get('category') || '').split(',').filter(Boolean),
+      sort: params.get('sort') || 'popular', min: params.get('min') || '', max: params.get('max') || '',
+      free: params.get('free') === '1', page: Number(params.get('page')) || 1, seller: params.get('seller') || '',
+    };
+    $('q').value = state.q; $('sort').value = state.sort; $('min').value = state.min; $('max').value = state.max; $('free').checked = state.free;
+
+    let cats = [];
+    VS.categories().then((c) => { cats = c; renderCats(); renderChips(); });
+
+    function renderCats() {
+      let group = '';
+      $('cat-list').innerHTML = cats.map((c) => {
+        const head = c.group !== group ? `<div class="text-[11px] uppercase tracking-wider text-white/40 pt-2 pb-1">${(group = c.group)}</div>` : '';
+        return `${head}<label class="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 hover:bg-white/5 cursor-pointer">
+          <span class="flex items-center gap-2"><input type="checkbox" class="check" value="${c.id}" ${state.category.includes(c.id) ? 'checked' : ''}><i data-lucide="${c.icon}" class="h-4 w-4 text-white/50"></i>${VS.esc(c.name)}</span>
+          <span class="text-xs text-white/40">${c.count}</span></label>`;
+      }).join('');
+      $('cat-list').querySelectorAll('input').forEach((i) => i.onchange = () => {
+        state.category = [...$('cat-list').querySelectorAll('input:checked')].map((x) => x.value);
+        state.page = 1; load();
+      });
+      VS.icons();
+    }
+
+    function renderChips() {
+      const chips = [];
+      if (state.q) chips.push(['q', `„${state.q}”`]);
+      state.category.forEach((c) => chips.push(['cat:' + c, (cats.find((x) => x.id === c) || {}).name || c]));
+      if (state.free) chips.push(['free', 'Darmowe']);
+      if (state.min || state.max) chips.push(['price', `${state.min || 0}–${state.max || '∞'} zł`]);
+      if (state.seller) chips.push(['seller', 'Twórca: ' + state.seller]);
+      $('active-chips').innerHTML = chips.map(([k, t]) => `<button data-chip="${VS.esc(k)}" class="chip active">${VS.esc(t)}<i data-lucide="x" class="h-3 w-3"></i></button>`).join('');
+      $('active-chips').querySelectorAll('[data-chip]').forEach((b) => b.onclick = () => {
+        const k = b.dataset.chip;
+        if (k === 'q') { state.q = ''; $('q').value = ''; }
+        else if (k.startsWith('cat:')) state.category = state.category.filter((c) => c !== k.slice(4));
+        else if (k === 'free') { state.free = false; $('free').checked = false; }
+        else if (k === 'price') { state.min = state.max = ''; $('min').value = $('max').value = ''; }
+        else if (k === 'seller') state.seller = '';
+        state.page = 1; renderCats(); load();
+      });
+      VS.icons();
+    }
+
+    async function load() {
+      const p = new URLSearchParams();
+      if (state.q) p.set('q', state.q);
+      if (state.category.length) p.set('category', state.category.join(','));
+      if (state.sort !== 'popular') p.set('sort', state.sort);
+      if (state.min) p.set('min', state.min);
+      if (state.max) p.set('max', state.max);
+      if (state.free) p.set('free', '1');
+      if (state.seller) p.set('seller', state.seller);
+      if (state.page > 1) p.set('page', state.page);
+      history.replaceState(null, '', '/sklep.html' + (p.toString() ? '?' + p : ''));
+      renderChips();
+      $('grid').innerHTML = Array.from({ length: 6 }, () => '<div class="skeleton h-80"></div>').join('');
+      p.set('sort', state.sort); p.set('limit', 12);
+      try {
+        const d = await VS.api('/api/products?' + p);
+        $('result-count').textContent = `${d.total} ${d.total === 1 ? 'produkt' : 'produktów'}`;
+        $('page-title').textContent = state.category.length === 1 ? ((cats.find((c) => c.id === state.category[0]) || {}).name || 'Sklep') : 'Sklep';
+        $('grid').innerHTML = d.items.length ? d.items.map(VS.productCard).join('') : `
+          <div class="sm:col-span-2 xl:col-span-3 glass rounded-2xl p-10 text-center">
+            <i data-lucide="package-search" class="h-10 w-10 mx-auto text-white/40"></i>
+            <div class="font-bold mt-3">Nic nie znaleziono</div><p class="text-sm text-white/60 mt-1">Zmień filtry lub wyszukaj inną frazę.</p></div>`;
+        $('pager').innerHTML = d.pages > 1 ? Array.from({ length: d.pages }, (_, i) => `<button data-page="${i + 1}" class="h-10 w-10 rounded-xl ${i + 1 === d.page ? 'btn-primary' : 'btn-ghost'} text-sm font-semibold">${i + 1}</button>`).join('') : '';
+        $('pager').querySelectorAll('[data-page]').forEach((b) => b.onclick = () => { state.page = Number(b.dataset.page); load(); scrollTo({ top: 0, behavior: 'smooth' }); });
+        VS.icons(); VS.reveal();
+      } catch (e) { VS.toast(e.message, 'err'); }
+    }
+
+    let t;
+    $('q').oninput = () => { clearTimeout(t); t = setTimeout(() => { state.q = $('q').value.trim(); state.page = 1; load(); }, 300); };
+    $('sort').onchange = () => { state.sort = $('sort').value; state.page = 1; load(); };
+    ['min', 'max'].forEach((k) => $(k).onchange = () => { state[k] = $(k).value; state.page = 1; load(); });
+    $('free').onchange = () => { state.free = $('free').checked; state.page = 1; load(); };
+    $('reset').onclick = () => { Object.assign(state, { q: '', category: [], min: '', max: '', free: false, page: 1, seller: '' }); $('q').value = $('min').value = $('max').value = ''; $('free').checked = false; renderCats(); load(); };
+    $('filters-toggle').onclick = () => $('filters').classList.toggle('hidden');
+    load();
+  </script>
+</body>
+</html>

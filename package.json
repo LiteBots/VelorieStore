@@ -1,0 +1,13 @@
+{
+  "name": "velorie-store",
+  "version": "1.0.0",
+  "description": "Velorie Store — marketplace i licencjonowanie pluginów, skryptów, map i modów",
+  "main": "server.js",
+  "private": true,
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.js",
+    "dev": "node --disable-warning=ExperimentalWarning --watch server.js",
+    "seed": "node --disable-warning=ExperimentalWarning scripts/seed.js"
+  }
+}

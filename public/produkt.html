@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Produkt – Velorie Store</title>
+  <meta name="theme-color" content="#0a1030" />
+  <link rel="icon" type="image/png" href="https://i.imgur.com/NDhlWyz.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="/assets/css/velorie.css" />
+</head>
+<body class="min-h-screen">
+  <div id="vs-header"></div>
+  <main class="relative z-10 mx-auto max-w-7xl px-4 py-8" id="root">
+    <div class="grid lg:grid-cols-[1fr_380px] gap-8"><div class="skeleton aspect-video"></div><div class="skeleton h-96"></div></div>
+  </main>
+  <div id="vs-footer"></div>
+
+  <script src="/assets/js/app.js"></script>
+  <script>
+    VS.layout({ active: 'Sklep' });
+    const { esc, fmt } = VS;
+    const slug = decodeURIComponent((location.pathname.match(/^\/produkt\/([^/]+)/) || [])[1] || new URLSearchParams(location.search).get('slug') || '');
+    let data;
+
+    async function load() {
+      try { data = await VS.api('/api/products/' + encodeURIComponent(slug)); }
+      catch (e) {
+        document.getElementById('root').innerHTML = `<div class="glass rounded-2xl p-12 text-center max-w-lg mx-auto"><i data-lucide="package-x" class="h-12 w-12 mx-auto text-white/40"></i>
+          <h1 class="text-2xl font-black mt-4">Nie znaleziono produktu</h1><p class="text-white/60 mt-2">Produkt mógł zostać usunięty lub ukryty.</p>
+          <a href="/sklep.html" class="inline-flex mt-6 rounded-xl btn-primary px-5 py-3 text-sm font-semibold">Wróć do sklepu</a></div>`;
+        return VS.icons();
+      }
+      render();
+    }
+
+    function render() {
+      reviewsLoaded = false;
+      const { product: p, seller, versions, owned, is_owner, wishlisted, related, rating_distribution: dist } = data;
+      document.title = `${p.title} – Velorie Store`;
+      const images = [p.cover_url, ...(p.gallery || [])].filter(Boolean);
+      const inCart = VS.cart.has(p.id);
+      const total = p.reviews_count || 0;
+
+      let actions;
+      if (owned) {
+        actions = `<a href="/api/products/${p.id}/download" class="w-full inline-flex justify-center items-center gap-2 rounded-2xl btn-primary lift px-5 py-3.5 font-semibold"><i data-lucide="download" class="h-5 w-5"></i>Pobierz ${esc(p.version)}</a>
+          <a href="/panel.html#/account/library" class="w-full inline-flex justify-center items-center gap-2 rounded-2xl btn-ghost lift px-5 py-3 text-sm font-semibold"><i data-lucide="key-round" class="h-4 w-4"></i>Klucz licencji w bibliotece</a>
+          <div class="text-center text-xs text-emerald-400 flex items-center justify-center gap-1.5"><i data-lucide="badge-check" class="h-4 w-4"></i>Posiadasz ten produkt</div>`;
+      } else if (is_owner) {
+        actions = `<a href="/panel.html#/seller/products/${p.id}" class="w-full inline-flex justify-center items-center gap-2 rounded-2xl btn-primary lift px-5 py-3.5 font-semibold"><i data-lucide="pencil" class="h-5 w-5"></i>Edytuj produkt</a>
+          <div class="text-center text-xs text-white/50">To Twój produkt ${p.status !== 'published' ? '· <span class="text-amber-300">niepublikowany</span>' : ''}</div>`;
+      } else {
+        actions = `<button id="buy-now" class="w-full inline-flex justify-center items-center gap-2 rounded-2xl btn-primary lift px-5 py-3.5 font-semibold"><i data-lucide="${p.price ? 'zap' : 'download'}" class="h-5 w-5"></i>${p.price ? 'Kup teraz' : 'Odbierz za darmo'}</button>
+          <div class="flex gap-2">
+            <button id="add-cart" class="flex-1 inline-flex justify-center items-center gap-2 rounded-2xl btn-ghost lift px-4 py-3 text-sm font-semibold"><i data-lucide="${inCart ? 'check' : 'shopping-cart'}" class="h-4 w-4"></i>${inCart ? 'W koszyku' : 'Do koszyka'}</button>
+            <button id="wish" class="inline-flex justify-center items-center rounded-2xl btn-ghost lift px-4" aria-label="Lista życzeń"><i data-lucide="heart" class="h-5 w-5 ${wishlisted ? 'fill-[#ff0354] text-[#ff0354]' : ''}"></i></button>
+          </div>`;
+      }
+
+      document.getElementById('root').innerHTML = `
+        <nav class="text-sm text-white/50 mb-5 flex items-center gap-2 flex-wrap">
+          <a href="/sklep.html" class="hover:text-white">Sklep</a><i data-lucide="chevron-right" class="h-3 w-3"></i>
+          <a href="/sklep.html?category=${p.category}" class="hover:text-white">${esc(VS.CAT_NAMES[p.category] || p.category)}</a><i data-lucide="chevron-right" class="h-3 w-3"></i>
+          <span class="text-white/80 truncate">${esc(p.title)}</span>
+        </nav>
+        <div class="grid lg:grid-cols-[1fr_380px] gap-8 items-start">
+          <div class="space-y-6 min-w-0">
+            <div class="glass rounded-3xl p-2">
+              <div class="rounded-2xl overflow-hidden aspect-video bg-black/40">${images[0] ? `<img id="main-img" src="${esc(images[0])}" class="w-full h-full object-cover" alt="${esc(p.title)}">` : ''}</div>
+              ${images.length > 1 ? `<div class="flex gap-2 p-2 overflow-x-auto">${images.map((src, i) => `<button data-img="${esc(src)}" class="shrink-0 w-24 aspect-video rounded-lg overflow-hidden ring-2 ${i ? 'ring-transparent' : 'ring-[var(--accent)]'} hover:ring-white/40"><img src="${esc(src)}" class="w-full h-full object-cover" alt=""></button>`).join('')}</div>` : ''}
+            </div>
+
+            <div class="glass rounded-3xl">
+              <div class="flex gap-1 p-2 border-b border-white/10 overflow-x-auto" role="tablist">
+                <button data-tab="desc" class="tab rounded-xl px-4 py-2 text-sm font-semibold">Opis</button>
+                <button data-tab="updates" class="tab rounded-xl px-4 py-2 text-sm font-semibold">Aktualizacje <span class="text-white/40">${versions.length}</span></button>
+                <button data-tab="reviews" class="tab rounded-xl px-4 py-2 text-sm font-semibold">Recenzje <span class="text-white/40">${total}</span></button>
+              </div>
+              <div class="p-6" id="tab-desc"><div class="prose-v">${VS.md(p.description) || '<p>Brak opisu.</p>'}</div>
+                ${p.tags.length ? `<div class="mt-6 flex flex-wrap gap-2">${p.tags.map((t) => `<a href="/sklep.html?q=${encodeURIComponent(t)}" class="chip">#${esc(t)}</a>`).join('')}</div>` : ''}</div>
+              <div class="p-6 hidden" id="tab-updates">${versions.length ? `<ol class="relative border-l border-white/10 ml-2 space-y-6">${versions.map((v, i) => `
+                <li class="ml-5"><span class="absolute -left-[7px] mt-1.5 h-3.5 w-3.5 rounded-full ${i ? 'bg-white/20' : 'bg-[var(--accent)]'}"></span>
+                  <div class="flex items-center gap-2"><span class="font-bold">v${esc(v.version)}</span>${i ? '' : '<span class="badge badge-red">Najnowsza</span>'}<span class="text-xs text-white/45">${fmt.date(v.created_at)}</span></div>
+                  <div class="prose-v text-sm">${VS.md(v.changelog)}</div></li>`).join('')}</ol>` : '<p class="text-white/60">Brak historii wersji.</p>'}</div>
+              <div class="p-6 hidden" id="tab-reviews">
+                <div class="grid sm:grid-cols-[180px_1fr] gap-6 items-center mb-6">
+                  <div class="text-center"><div class="text-5xl font-black">${p.rating ? Number(p.rating).toFixed(1) : '–'}</div><div class="mt-1">${VS.stars(p.rating, 'h-4 w-4')}</div><div class="text-xs text-white/50 mt-1">${total} ocen</div></div>
+                  <div class="space-y-1.5">${[5, 4, 3, 2, 1].map((s) => { const n = dist[s] || 0; const w = total ? (n / total) * 100 : 0; return `<div class="flex items-center gap-2 text-xs"><span class="w-3 text-white/60">${s}</span><i data-lucide="star" class="h-3 w-3 text-amber-400 fill-amber-400"></i><div class="flex-1 h-2 rounded-full bg-white/10 overflow-hidden"><div class="h-full bg-gradient-to-r from-[#ff0354] to-[#7c3aed]" style="width:${w}%"></div></div><span class="w-6 text-right text-white/50">${n}</span></div>`; }).join('')}</div>
+                </div>
+                ${owned ? `<form id="review-form" class="glass-soft rounded-2xl p-4 mb-6 space-y-3">
+                  <div class="font-semibold text-sm">${data.my_review ? 'Edytuj swoją recenzję' : 'Oceń produkt'}</div>
+                  <div id="rate" class="flex gap-1">${[1, 2, 3, 4, 5].map((s) => `<button type="button" data-rate="${s}" aria-label="${s} gwiazdek"><i data-lucide="star" class="h-6 w-6"></i></button>`).join('')}</div>
+                  <textarea id="review-text" rows="3" class="field text-sm" placeholder="Co sądzisz o produkcie?">${esc(data.my_review ? data.my_review.comment : '')}</textarea>
+                  <button class="rounded-xl btn-primary px-4 py-2 text-sm font-semibold">Zapisz recenzję</button></form>` : ''}
+                <div id="reviews-list" class="space-y-4"><div class="skeleton h-20"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="space-y-4 lg:sticky lg:top-24">
+            <div class="glass rounded-3xl p-6 space-y-4">
+              <div class="flex items-center gap-2 flex-wrap"><span class="chip">${esc(VS.CAT_NAMES[p.category] || p.category)}</span>${p.featured ? '<span class="badge badge-red"><i data-lucide="flame" class="h-3 w-3"></i>Polecane</span>' : ''}</div>
+              <h1 class="text-2xl sm:text-3xl font-black leading-tight">${esc(p.title)}</h1>
+              <p class="text-sm text-white/65">${esc(p.summary)}</p>
+              <div class="flex items-center gap-2 text-sm">${VS.stars(p.rating)}<span class="text-white/60">${p.rating ? Number(p.rating).toFixed(1) : ''} (${total})</span><span class="text-white/30">•</span><span class="text-white/60">${fmt.num(p.sales)} sprzedanych</span></div>
+              <div class="text-4xl font-black ${p.price ? '' : 'text-emerald-400'}">${fmt.price(p.price)}</div>
+              <div class="space-y-2">${actions}</div>
+              <dl class="grid grid-cols-2 gap-3 pt-4 border-t border-white/10 text-sm">
+                <div><dt class="text-xs text-white/45">Wersja</dt><dd class="font-semibold">v${esc(p.version)}</dd></div>
+                <div><dt class="text-xs text-white/45">Aktualizacja</dt><dd class="font-semibold">${fmt.date(p.updated_at)}</dd></div>
+                <div class="col-span-2"><dt class="text-xs text-white/45">Kompatybilność</dt><dd class="font-semibold">${esc(p.compatibility || '—')}</dd></div>
+                <div><dt class="text-xs text-white/45">Licencja</dt><dd class="font-semibold">${p.license_enabled ? (p.max_activations ? `${p.max_activations} ${p.max_activations === 1 ? 'serwer' : 'serwery'}` : 'Bez limitu') : 'Bez klucza'}</dd></div>
+                <div><dt class="text-xs text-white/45">Plik</dt><dd class="font-semibold">${p.has_file ? fmt.size(p.file_size) : '—'}</dd></div>
+              </dl>
+              <div class="rounded-xl border border-white/10 bg-black/30 p-3 text-xs text-white/60 flex gap-2"><i data-lucide="shield-check" class="h-4 w-4 text-emerald-400 shrink-0"></i>Natychmiastowy dostęp po płatności, darmowe aktualizacje i klucz licencji w panelu.</div>
+            </div>
+
+            <a href="/tworca/${esc(seller.store_slug)}" class="glass rounded-3xl p-5 flex items-center gap-4 lift">
+              ${seller.avatar_url ? `<img src="${esc(seller.avatar_url)}" class="h-12 w-12 rounded-2xl object-cover" alt="">` : `<span class="h-12 w-12 rounded-2xl grid place-items-center bg-gradient-to-br from-[#ff0354] to-[#7c3aed] font-black text-lg">${esc((seller.store_name || '?')[0])}</span>`}
+              <div class="min-w-0 flex-1"><div class="text-xs text-white/50">Twórca</div><div class="font-bold truncate">${esc(seller.store_name)}</div>
+                <div class="text-xs text-white/50">${seller.products} produktów • ${fmt.num(seller.sales)} sprzedaży</div></div>
+              <i data-lucide="chevron-right" class="h-5 w-5 text-white/40"></i>
+            </a>
+          </aside>
+        </div>
+
+        ${related.length ? `<section class="mt-14"><h2 class="text-2xl font-black mb-5">Podobne produkty</h2><div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">${related.map(VS.productCard).join('')}</div></section>` : ''}`;
+
+      // Galeria
+      document.querySelectorAll('[data-img]').forEach((b) => b.onclick = () => {
+        document.getElementById('main-img').src = b.dataset.img;
+        document.querySelectorAll('[data-img]').forEach((x) => x.classList.replace('ring-[var(--accent)]', 'ring-transparent'));
+        b.classList.replace('ring-transparent', 'ring-[var(--accent)]');
+      });
+      // Zakładki
+      const tabs = document.querySelectorAll('.tab');
+      const show = (name) => {
+        tabs.forEach((t) => t.className = `tab rounded-xl px-4 py-2 text-sm font-semibold whitespace-nowrap ${t.dataset.tab === name ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5'}`);
+        ['desc', 'updates', 'reviews'].forEach((n) => document.getElementById('tab-' + n).classList.toggle('hidden', n !== name));
+        if (name === 'reviews') loadReviews();
+      };
+      tabs.forEach((t) => t.onclick = () => show(t.dataset.tab));
+      show(location.hash === '#recenzje' ? 'reviews' : 'desc');
+
+      const cartItem = { id: p.id, title: p.title, price: p.price, cover_url: p.cover_url, slug: p.slug, store_name: p.store_name };
+      const buy = document.getElementById('buy-now');
+      if (buy) buy.onclick = () => {
+        if (!VS.cart.has(p.id)) VS.cart.save([...VS.cart.items(), cartItem]);
+        location.href = '/koszyk.html';
+      };
+      const add = document.getElementById('add-cart');
+      if (add) add.onclick = () => { VS.cart.add(cartItem); render(); };
+      const wish = document.getElementById('wish');
+      if (wish) wish.onclick = async () => {
+        if (!VS.me) return location.href = '/auth.html?next=' + encodeURIComponent(location.pathname);
+        const r = await VS.api('/api/me/wishlist/' + p.id, { method: data.wishlisted ? 'DELETE' : 'POST' });
+        data.wishlisted = r.wishlisted;
+        VS.toast(r.wishlisted ? 'Dodano do listy życzeń' : 'Usunięto z listy życzeń', 'ok');
+        render();
+      };
+      const form = document.getElementById('review-form');
+      if (form) {
+        let rating = data.my_review ? data.my_review.rating : 5;
+        const paint = () => form.querySelectorAll('[data-rate] svg, [data-rate] i').forEach((s, i) => s.setAttribute('class', `h-6 w-6 ${i < rating ? 'text-amber-400 fill-amber-400' : 'text-white/25'}`));
+        form.querySelectorAll('[data-rate]').forEach((b) => b.onclick = () => { rating = Number(b.dataset.rate); paint(); });
+        form.onsubmit = async (e) => {
+          e.preventDefault();
+          try {
+            await VS.api(`/api/products/${p.id}/reviews`, { method: 'POST', body: { rating, comment: document.getElementById('review-text').value } });
+            VS.toast('Dziękujemy za recenzję!', 'ok');
+            data = await VS.api('/api/products/' + encodeURIComponent(slug));
+            location.hash = 'recenzje'; render();
+          } catch (err) { VS.toast(err.message, 'err'); }
+        };
+        VS.icons(); paint();
+      }
+      VS.icons(); VS.reveal();
+    }
+
+    let reviewsLoaded = false;
+    async function loadReviews() {
+      if (reviewsLoaded) return;
+      reviewsLoaded = true;
+      const list = await VS.api(`/api/products/${data.product.id}/reviews`);
+      document.getElementById('reviews-list').innerHTML = list.length ? list.map((r) => `
+        <div class="glass-soft rounded-2xl p-4">
+          <div class="flex items-center gap-3">
+            ${r.avatar_url ? `<img src="${esc(r.avatar_url)}" class="h-9 w-9 rounded-full object-cover" alt="">` : `<span class="h-9 w-9 rounded-full grid place-items-center bg-white/10 font-bold text-sm">${esc(r.username[0])}</span>`}
+            <div><div class="font-semibold text-sm">${esc(r.username)}</div><div class="flex items-center gap-2">${VS.stars(r.rating, 'h-3 w-3')}<span class="text-xs text-white/40">${fmt.rel(r.created_at)}</span></div></div>
+            <span class="ml-auto badge badge-green"><i data-lucide="badge-check" class="h-3 w-3"></i>Zweryfikowany zakup</span>
+          </div>
+          ${r.comment ? `<p class="text-sm text-white/75 mt-3">${esc(r.comment)}</p>` : ''}
+        </div>`).join('') : '<p class="text-white/60 text-sm">Brak recenzji. Kupujący mogą ocenić produkt po zakupie.</p>';
+      VS.icons();
+    }
+
+    VS.meReady.then(load);
+  </script>
+</body>
+</html>

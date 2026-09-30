@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Koszyk – Velorie Store</title>
+  <meta name="theme-color" content="#0a1030" />
+  <link rel="icon" type="image/png" href="https://i.imgur.com/NDhlWyz.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="/assets/css/velorie.css" />
+</head>
+<body class="min-h-screen">
+  <div id="vs-header"></div>
+  <main class="relative z-10 mx-auto max-w-6xl px-4 py-10" id="root"></main>
+  <div id="vs-footer"></div>
+
+  <script src="/assets/js/app.js"></script>
+  <script>
+    VS.layout({});
+    const { esc, fmt } = VS;
+    const root = document.getElementById('root');
+    const params = new URLSearchParams(location.search);
+    let coupon = params.get('coupon') || '';
+    let quote = null;
+
+    async function success(number) {
+      root.innerHTML = '<div class="skeleton h-96"></div>';
+      let o;
+      try { o = await VS.api('/api/me/orders/' + encodeURIComponent(number)); }
+      catch { root.innerHTML = '<div class="glass rounded-2xl p-10 text-center">Nie znaleziono zamówienia.</div>'; return; }
+      if (o.status === 'paid') VS.cart.save(VS.cart.items().filter((i) => !o.items.some((x) => x.product_id === i.id)));
+      const paid = o.status === 'paid';
+      root.innerHTML = `
+        <div class="max-w-3xl mx-auto glass rounded-3xl p-6 sm:p-10">
+          <div class="text-center">
+            <span class="inline-grid h-16 w-16 place-items-center rounded-2xl ${paid ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/15 text-amber-300'}"><i data-lucide="${paid ? 'party-popper' : 'clock'}" class="h-8 w-8"></i></span>
+            <h1 class="text-3xl font-black mt-4">${paid ? 'Dziękujemy za zakup!' : 'Oczekujemy na płatność'}</h1>
+            <p class="text-white/60 mt-2">Zamówienie <span class="font-mono text-white">${esc(o.number)}</span> • ${fmt.datetime(o.created_at)}</p>
+          </div>
+          <div class="mt-8 space-y-3">${o.items.map((i) => `
+            <div class="glass-soft rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+              <img src="${esc(i.cover_url || '')}" class="w-full sm:w-32 aspect-video rounded-xl object-cover bg-black/30" alt="">
+              <div class="flex-1 min-w-0">
+                <a href="/produkt/${esc(i.slug)}" class="font-bold hover:underline">${esc(i.title)}</a>
+                ${i.license_key ? `<button data-copy="${esc(i.license_key)}" class="mt-2 flex items-center gap-2 font-mono text-sm rounded-lg bg-black/40 border border-white/10 px-3 py-1.5 hover:border-white/30 max-w-full"><i data-lucide="key-round" class="h-4 w-4 text-[var(--accent)]"></i><span class="truncate">${esc(i.license_key)}</span><i data-lucide="copy" class="h-3.5 w-3.5 text-white/40"></i></button>` : ''}
+              </div>
+              ${paid ? `<a href="/api/products/${i.product_id}/download" class="inline-flex justify-center items-center gap-2 rounded-xl btn-primary px-4 py-2.5 text-sm font-semibold"><i data-lucide="download" class="h-4 w-4"></i>Pobierz</a>` : ''}
+            </div>`).join('')}</div>
+          <div class="mt-6 flex justify-between text-sm border-t border-white/10 pt-4"><span class="text-white/60">Zapłacono</span><span class="font-bold text-lg">${fmt.money(o.total)}</span></div>
+          <div class="mt-8 flex flex-wrap justify-center gap-3">
+            <a href="/panel.html#/account/library" class="inline-flex items-center gap-2 rounded-2xl btn-primary px-5 py-3 text-sm font-semibold"><i data-lucide="library" class="h-4 w-4"></i>Moja biblioteka</a>
+            <a href="/sklep.html" class="inline-flex items-center gap-2 rounded-2xl btn-ghost px-5 py-3 text-sm font-semibold">Kontynuuj zakupy</a>
+          </div>
+        </div>`;
+      root.querySelectorAll('[data-copy]').forEach((b) => b.onclick = () => VS.copy(b.dataset.copy));
+      VS.icons();
+    }
+
+    async function renderCart() {
+      const items = VS.cart.items();
+      if (!items.length) {
+        root.innerHTML = `<div class="max-w-xl mx-auto glass rounded-3xl p-12 text-center">
+          <i data-lucide="shopping-cart" class="h-12 w-12 mx-auto text-white/35"></i>
+          <h1 class="text-2xl font-black mt-4">Koszyk jest pusty</h1><p class="text-white/60 mt-2">Znajdź skrypty, mapy i pluginy dla swojego serwera.</p>
+          <a href="/sklep.html" class="inline-flex mt-6 items-center gap-2 rounded-2xl btn-primary px-5 py-3 text-sm font-semibold"><i data-lucide="store" class="h-4 w-4"></i>Przejdź do sklepu</a></div>`;
+        return VS.icons();
+      }
+      try { quote = await VS.api('/api/cart/quote', { method: 'POST', body: { items: items.map((i) => i.id), coupon } }); }
+      catch (e) { VS.toast(e.message, 'err'); return; }
+      const byId = Object.fromEntries(quote.items.map((i) => [i.product_id, i]));
+      const warn = Object.fromEntries(quote.warnings.map((w) => [w.product_id, w.message]));
+
+      root.innerHTML = `
+        <h1 class="text-3xl md:text-4xl font-black mb-6">Koszyk <span class="text-white/40 text-2xl">(${items.length})</span></h1>
+        <div class="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
+          <div class="space-y-3">${items.map((i) => {
+            const q = byId[i.id];
+            return `<div class="glass rounded-2xl p-4 flex gap-4 items-center ${q ? '' : 'opacity-60'}">
+              <a href="/produkt/${esc(i.slug)}" class="shrink-0"><img src="${esc(i.cover_url || '')}" class="w-28 sm:w-36 aspect-video rounded-xl object-cover bg-black/30" alt=""></a>
+              <div class="flex-1 min-w-0">
+                <a href="/produkt/${esc(i.slug)}" class="font-bold hover:underline line-clamp-1">${esc(i.title)}</a>
+                <div class="text-xs text-white/50">${esc(i.store_name || '')}</div>
+                ${warn[i.id] ? `<div class="mt-1 text-xs text-amber-300 flex items-center gap-1"><i data-lucide="alert-triangle" class="h-3.5 w-3.5"></i>${esc(warn[i.id])}</div>` : ''}
+                ${q && q.discount ? `<div class="mt-1 text-xs text-emerald-400">Rabat: −${fmt.money(q.discount)}</div>` : ''}
+              </div>
+              <div class="text-right shrink-0">
+                ${q && q.discount ? `<div class="text-xs text-white/40 line-through">${fmt.money(q.price)}</div>` : ''}
+                <div class="font-black">${q ? fmt.price(q.total) : fmt.price(i.price)}</div>
+                <button data-remove="${i.id}" class="mt-2 text-xs text-white/50 hover:text-[var(--accent)] inline-flex items-center gap-1"><i data-lucide="trash-2" class="h-3.5 w-3.5"></i>Usuń</button>
+              </div>
+            </div>`;
+          }).join('')}</div>
+
+          <aside class="glass rounded-3xl p-6 space-y-4 lg:sticky lg:top-24">
+            <h2 class="font-bold text-lg">Podsumowanie</h2>
+            <form id="coupon-form" class="flex gap-2">
+              <input id="coupon" class="field text-sm uppercase" placeholder="Kod rabatowy" value="${esc(coupon)}" />
+              <button class="rounded-xl btn-ghost px-4 text-sm font-semibold">Użyj</button>
+            </form>
+            ${quote.coupon ? `<div class="text-xs ${quote.coupon.valid ? 'text-emerald-400' : 'text-amber-300'}">${quote.coupon.valid ? `Kod ${esc(quote.coupon.code)} został zastosowany` : `Kod ${esc(quote.coupon.code)} nie pasuje do produktów w koszyku`}</div>` : ''}
+            <dl class="space-y-2 text-sm">
+              <div class="flex justify-between"><dt class="text-white/60">Wartość</dt><dd>${fmt.money(quote.subtotal)}</dd></div>
+              ${quote.discount ? `<div class="flex justify-between text-emerald-400"><dt>Rabat</dt><dd>−${fmt.money(quote.discount)}</dd></div>` : ''}
+              <div class="flex justify-between pt-3 border-t border-white/10 text-lg font-black"><dt>Do zapłaty</dt><dd>${fmt.money(quote.total)}</dd></div>
+            </dl>
+            ${VS.me ? `<button id="checkout" ${quote.items.length ? '' : 'disabled'} class="w-full inline-flex justify-center items-center gap-2 rounded-2xl btn-primary lift px-5 py-3.5 font-semibold"><i data-lucide="lock" class="h-4 w-4"></i>${quote.total ? 'Zapłać ' + fmt.money(quote.total) : 'Odbierz za darmo'}</button>`
+              : `<a href="/auth.html?next=/koszyk.html" class="w-full inline-flex justify-center items-center gap-2 rounded-2xl btn-primary lift px-5 py-3.5 font-semibold"><i data-lucide="log-in" class="h-4 w-4"></i>Zaloguj się, aby kupić</a>`}
+            <div id="pay-note" class="text-xs text-white/50 flex gap-2"><i data-lucide="shield-check" class="h-4 w-4 shrink-0 text-emerald-400"></i><span>Po płatności produkty trafią do Twojej biblioteki wraz z kluczami licencji.</span></div>
+          </aside>
+        </div>`;
+
+      root.querySelectorAll('[data-remove]').forEach((b) => b.onclick = () => { VS.cart.remove(Number(b.dataset.remove)); renderCart(); });
+      document.getElementById('coupon-form').onsubmit = (e) => { e.preventDefault(); coupon = document.getElementById('coupon').value.trim(); renderCart(); };
+      const btn = document.getElementById('checkout');
+      if (btn) btn.onclick = async () => {
+        btn.disabled = true; btn.innerHTML = 'Przetwarzanie…';
+        try {
+          const r = await VS.api('/api/checkout', { method: 'POST', body: { items: quote.items.map((i) => i.product_id), coupon } });
+          location.href = r.redirect;
+        } catch (e) { VS.toast(e.message, 'err'); renderCart(); }
+      };
+      VS.api('/api/stats/public').then((s) => {
+        if (s.payment_provider === 'demo') document.querySelector('#pay-note span').insertAdjacentHTML('beforeend', ' <b class="text-amber-300">Tryb demo: płatność jest symulowana.</b>');
+      }).catch(() => {});
+      VS.icons();
+    }
+
+    VS.meReady.then(() => {
+      if (params.get('order') && params.get('status') === 'success' && VS.me) success(params.get('order'));
+      else { if (params.get('status') === 'cancel') VS.toast('Płatność została anulowana', 'err'); renderCart(); }
+    });
+    document.addEventListener('cart:change', () => { if (!params.get('order')) renderCart(); });
+  </script>
+</body>
+</html>
