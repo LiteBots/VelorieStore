@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Zaloguj się — Velorie Store</title>
+  <meta name="theme-color" content="#07080d" />
+  <link rel="icon" href="https://i.imgur.com/NDhlWyz.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/assets/css/app.css" />
+</head>
+<body>
+<div class="site">
+  <div id="vs-header"></div>
+  <main class="auth">
+    <div class="auth-side">
+      <div>
+        <span class="eyebrow">Velorie Store</span>
+        <h2 class="h1 mt-4" style="max-width:460px">Jedno konto. <span class="grad-text">Kupuj i sprzedawaj.</span></h2>
+        <p class="lead mt-4" style="max-width:440px">Biblioteka zakupów, klucze licencji i panel twórcy ze statystykami sprzedaży — w jednym miejscu.</p>
+      </div>
+      <div class="stack-3" style="max-width:440px">
+        <div class="card card-pad-sm row gap-3" style="padding:16px"><span class="icon-box"><i data-i="library"></i></span><div><div class="strong small">Biblioteka i licencje</div><div class="xs subtle">Pobieraj pliki i zarządzaj serwerami przypisanymi do kluczy.</div></div></div>
+        <div class="card card-pad-sm row gap-3" style="padding:16px"><span class="icon-box"><i data-i="chart"></i></span><div><div class="strong small">Panel twórcy</div><div class="xs subtle">Przychody, konwersja, kody rabatowe i wypłaty.</div></div></div>
+        <div class="card card-pad-sm row gap-3" style="padding:16px"><span class="icon-box"><i data-i="shield-check"></i></span><div><div class="strong small">Bezpieczne logowanie</div><div class="xs subtle">E-mail, Google lub Discord — możesz je połączyć.</div></div></div>
+      </div>
+      <p class="xs subtle">© Velorie Store</p>
+    </div>
+
+    <div class="auth-main">
+      <div class="auth-card">
+        <h1 class="h2" id="title">Zaloguj się</h1>
+        <p class="muted mt-2" id="subtitle">Witaj ponownie! Wybierz metodę logowania.</p>
+
+        <div class="grid g-2 mt-8" style="gap:10px">
+          <a href="/auth/google" data-oauth="google" class="btn btn-secondary btn-lg"><i data-i="google" class="i-md"></i>Google</a>
+          <a href="/auth/discord" data-oauth="discord" class="btn btn-discord btn-lg"><i data-i="discord" class="i-md"></i>Discord</a>
+        </div>
+        <div class="divider-text mt-6 mb-6">lub e-mailem</div>
+
+        <form id="form" class="stack" novalidate>
+          <div data-only="register"><label class="label" for="username">Nazwa użytkownika</label><input id="username" class="input input-lg" autocomplete="username" placeholder="np. GraczPL" maxlength="32" /></div>
+          <div><label class="label" for="email">Adres e-mail</label><input id="email" type="email" class="input input-lg" autocomplete="email" placeholder="ty@przyklad.pl" /></div>
+          <div>
+            <div class="row between"><label class="label" for="password">Hasło</label><span data-only="login" class="xs subtle">min. 8 znaków</span></div>
+            <div class="relative">
+              <input id="password" type="password" class="input input-lg" style="padding-right:48px" autocomplete="current-password" placeholder="••••••••" />
+              <button type="button" id="toggle-pw" class="btn btn-ghost btn-sm btn-icon input-affix" aria-label="Pokaż hasło"><i data-i="eye" class="i-md"></i></button>
+            </div>
+            <div data-only="register" class="row gap-1 mt-2" id="pw-meter" aria-hidden="true">
+              <div class="progress grow"><div style="width:0"></div></div><div class="progress grow"><div style="width:0"></div></div><div class="progress grow"><div style="width:0"></div></div><div class="progress grow"><div style="width:0"></div></div>
+            </div>
+          </div>
+          <div data-only="register" class="card card-pad-sm" style="padding:14px 16px">
+            <label class="switch small"><input id="seller" type="checkbox" /><span><span class="strong">Chcę sprzedawać</span> <span class="subtle">— otwórz od razu sklep twórcy</span></span></label>
+            <div id="store-wrap" class="mt-4" hidden><label class="label" for="store">Nazwa sklepu</label><input id="store" class="input" placeholder="np. NovaDev Scripts" maxlength="40" /></div>
+          </div>
+          <label data-only="register" class="check xs"><input id="terms" type="checkbox" /><span>Akceptuję <a class="link" href="/regulamin.html" target="_blank">regulamin</a> i zasady licencjonowania produktów.</span></label>
+          <div id="error" class="callout callout-red small" hidden></div>
+          <button id="submit" class="btn btn-primary btn-lg btn-block"><span>Zaloguj się</span></button>
+        </form>
+
+        <p class="small muted text-center mt-6" id="switch"></p>
+        <div class="callout mt-8 xs"><i data-i="info" class="i-sm"></i><span>Konta demo: <span class="mono">gracz@velorie.store</span>, <span class="mono">nova@velorie.store</span> · hasło <span class="mono">demo1234</span></span></div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="/assets/js/icons.js"></script>
+<script src="/assets/js/app.js"></script>
+<script>
+  VS.layout({ footer: false });
+  const $ = (id) => document.getElementById(id);
+  const params = new URLSearchParams(location.search);
+  const next = /^\/[^/]/.test(params.get('next') || '') ? params.get('next') : '/panel.html';
+  let mode = params.get('mode') === 'register' ? 'register' : 'login';
+
+  VS.meReady.then((u) => { if (u) location.replace(next); });
+
+  function setMode(m) {
+    mode = m;
+    document.querySelectorAll('[data-only]').forEach((el) => { el.hidden = el.dataset.only !== m; });
+    $('title').textContent = m === 'login' ? 'Zaloguj się' : 'Załóż konto';
+    $('subtitle').textContent = m === 'login' ? 'Witaj ponownie! Wybierz metodę logowania.' : 'Dołącz do Velorie — to zajmie mniej niż minutę.';
+    $('submit').querySelector('span').textContent = m === 'login' ? 'Zaloguj się' : 'Utwórz konto';
+    $('password').autocomplete = m === 'login' ? 'current-password' : 'new-password';
+    $('switch').innerHTML = m === 'login' ? 'Nie masz konta? <a href="#" class="link-brand" data-mode="register">Zarejestruj się</a>' : 'Masz już konto? <a href="#" class="link-brand" data-mode="login">Zaloguj się</a>';
+    $('switch').querySelector('a').onclick = (e) => { e.preventDefault(); setMode(e.target.dataset.mode); };
+    $('error').hidden = true;
+    document.title = (m === 'login' ? 'Zaloguj się' : 'Załóż konto') + ' — Velorie Store';
+  }
+  setMode(mode);
+
+  document.querySelectorAll('[data-oauth]').forEach((a) => a.href = `/auth/${a.dataset.oauth}?next=${encodeURIComponent(next)}`);
+  VS.api('/api/auth/providers').then((p) => {
+    document.querySelectorAll('[data-oauth]').forEach((a) => { if (!p[a.dataset.oauth]) { a.style.opacity = '.55'; a.title = 'Ta metoda logowania nie jest jeszcze skonfigurowana'; } });
+  });
+
+  const showError = (msg) => { $('error').innerHTML = `${VS.icon('alert', 'i-md')}<span>${VS.esc(msg)}</span>`; $('error').hidden = false; };
+  if (params.get('error')) showError(params.get('error'));
+
+  $('seller').onchange = () => { $('store-wrap').hidden = !$('seller').checked; };
+  $('toggle-pw').onclick = () => { $('password').type = $('password').type === 'password' ? 'text' : 'password'; };
+  $('password').oninput = () => {
+    const v = $('password').value;
+    const s = Math.min(4, (v.length >= 8) + /[A-Z]/.test(v) + /[0-9]/.test(v) + /[^A-Za-z0-9]/.test(v) + (v.length >= 12 ? 1 : 0));
+    const color = s <= 1 ? 'var(--red)' : s <= 2 ? 'var(--amber)' : 'var(--green)';
+    $('pw-meter').querySelectorAll('.progress > div').forEach((b, i) => { b.style.width = i < s ? '100%' : '0'; b.style.background = color; });
+  };
+
+  $('form').onsubmit = async (e) => {
+    e.preventDefault();
+    $('error').hidden = true;
+    const body = { email: $('email').value.trim(), password: $('password').value };
+    if (!body.email || !body.password) return showError('Podaj adres e-mail i hasło.');
+    if (mode === 'register') {
+      Object.assign(body, { username: $('username').value.trim(), seller: $('seller').checked, store_name: $('store').value.trim() });
+      if (!$('terms').checked) return showError('Zaakceptuj regulamin, aby założyć konto.');
+      if (body.seller && body.store_name.length < 3) return showError('Podaj nazwę sklepu (min. 3 znaki).');
+    }
+    $('submit').disabled = true;
+    try {
+      await VS.api(`/api/auth/${mode}`, { method: 'POST', body });
+      location.href = mode === 'register' && body.seller ? '/panel.html#/seller/stats' : next;
+    } catch (err) { showError(err.message); }
+    finally { $('submit').disabled = false; }
+  };
+</script>
+</body>
+</html>

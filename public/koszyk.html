@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Koszyk — Velorie Store</title>
+  <meta name="theme-color" content="#07080d" />
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="https://i.imgur.com/NDhlWyz.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/assets/css/app.css" />
+  <style>
+    .checkout { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 32px; align-items: start; }
+    @media (max-width: 960px) { .checkout { grid-template-columns: 1fr; } }
+    .line { display: grid; grid-template-columns: 136px minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 18px 20px; }
+    .line + .line { border-top: 1px solid var(--line); }
+    .line img { width: 100%; aspect-ratio: 16/10; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); }
+    @media (max-width: 560px) { .line { grid-template-columns: 88px minmax(0, 1fr); } .line > :last-child { grid-column: 2; text-align: left !important; } }
+    .sum-row { display: flex; justify-content: space-between; font-size: 14px; color: var(--text-2); }
+    .sum-row + .sum-row { margin-top: 10px; }
+    .sum-total { display: flex; justify-content: space-between; align-items: baseline; padding-top: 16px; margin-top: 16px; border-top: 1px solid var(--line); }
+    .pay-methods { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pay-methods span { height: 26px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--line-2); display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; color: var(--text-2); background: var(--surface-2); letter-spacing: .02em; }
+    .success-hero { text-align: center; padding: 16px 0 8px; }
+    .success-hero .icon-box { width: 64px; height: 64px; border-radius: 20px; margin: 0 auto; }
+  </style>
+</head>
+<body>
+<div class="site">
+  <div id="vs-header"></div>
+  <main class="container" style="padding-top:40px" id="root"></main>
+  <div id="vs-footer"></div>
+</div>
+<script src="/assets/js/icons.js"></script>
+<script src="/assets/js/app.js"></script>
+<script>
+  VS.layout({});
+  const { esc, fmt, icon } = VS;
+  const root = document.getElementById('root');
+  const params = new URLSearchParams(location.search);
+  let coupon = params.get('coupon') || '';
+  let quote = null;
+  let provider = 'demo';
+  VS.api('/api/stats/public').then((s) => { provider = s.payment_provider; const n = document.getElementById('demo-note'); if (n) n.hidden = provider !== 'demo'; }).catch(() => {});
+
+  async function success(number) {
+    root.innerHTML = '<div class="skeleton" style="height:420px;max-width:720px;margin:0 auto"></div>';
+    let o;
+    try { o = await VS.api('/api/me/orders/' + encodeURIComponent(number)); }
+    catch { root.innerHTML = `<div class="card empty container-xs" style="margin:0 auto"><h3>Nie znaleziono zamówienia</h3></div>`; return; }
+    if (o.status === 'paid') VS.cart.save(VS.cart.items().filter((i) => !o.items.some((x) => x.product_id === i.id)));
+    const paid = o.status === 'paid';
+    root.innerHTML = `
+      <div style="max-width:720px;margin:0 auto">
+        <div class="success-hero">
+          <span class="icon-box ${paid ? 'green' : ''}">${icon(paid ? 'check' : 'clock', 'i-xl')}</span>
+          <h1 class="h1 mt-6">${paid ? 'Dziękujemy za zakup!' : 'Czekamy na płatność'}</h1>
+          <p class="muted mt-3">${paid ? 'Produkty są już w Twojej bibliotece. Poniżej znajdziesz klucze licencji.' : 'Gdy bramka potwierdzi płatność, produkty pojawią się w bibliotece.'}</p>
+        </div>
+        <div class="card mt-8">
+          <div class="card-head"><div><div class="xs subtle">Zamówienie</div><div class="strong mono small">${esc(o.number)}</div></div>
+            <div class="text-right"><div class="xs subtle">${fmt.datetime(o.created_at)}</div><div class="mt-1">${paid ? '<span class="badge badge-green"><span class="dot"></span>Opłacone</span>' : '<span class="badge badge-amber"><span class="dot"></span>Oczekuje</span>'}</div></div></div>
+          ${o.items.map((i) => `
+            <div class="line">
+              <a href="/produkt/${esc(i.slug)}"><img src="${esc(i.cover_url || '')}" alt=""></a>
+              <div style="min-width:0"><a href="/produkt/${esc(i.slug)}" class="strong">${esc(i.title)}</a>
+                ${i.license_key ? `<button class="keybox mt-3" data-copy="${esc(i.license_key)}" title="Kopiuj klucz">${icon('key', 'i-md')}<span>${esc(i.license_key)}</span>${icon('copy', 'i-sm')}</button>` : ''}</div>
+              ${paid ? `<a href="/api/products/${i.product_id}/download" class="btn btn-primary">${icon('download', 'i-md')}Pobierz</a>` : ''}
+            </div>`).join('')}
+          <div class="card-foot row between"><span class="muted small">Zapłacono</span><span class="price">${fmt.money(o.total)}</span></div>
+        </div>
+        <div class="row center gap-3 wrap mt-8">
+          <a href="/panel.html#/account/library" class="btn btn-primary btn-lg">${icon('library', 'i-md')}Przejdź do biblioteki</a>
+          <a href="/sklep.html" class="btn btn-secondary btn-lg">Kontynuuj zakupy</a>
+        </div>
+      </div>`;
+    root.querySelectorAll('[data-copy]').forEach((b) => b.onclick = () => VS.copy(b.dataset.copy, 'Skopiowano klucz licencji'));
+  }
+
+  async function renderCart() {
+    const items = VS.cart.items();
+    if (!items.length) {
+      root.innerHTML = `<div class="card empty" style="max-width:560px;margin:40px auto">
+        <span class="icon-box lg">${icon('cart', 'i-lg')}</span>
+        <h3>Twój koszyk jest pusty</h3><p>Znajdź skrypty, mapy i pluginy dla swojego serwera.</p>
+        <a href="/sklep.html" class="btn btn-primary mt-6">Przeglądaj sklep</a></div>`;
+      return;
+    }
+    try { quote = await VS.api('/api/cart/quote', { method: 'POST', body: { items: items.map((i) => i.id), coupon } }); }
+    catch (e) { VS.toast(e.message, 'err'); return; }
+    const byId = Object.fromEntries(quote.items.map((i) => [i.product_id, i]));
+    const warn = Object.fromEntries(quote.warnings.map((w) => [w.product_id, w.message]));
+
+    root.innerHTML = `
+      <div class="page-head"><div><h1 class="h1">Koszyk</h1><p>${items.length} ${fmt.plural(items.length, 'produkt', 'produkty', 'produktów')}</p></div></div>
+      <div class="checkout">
+        <div class="card" style="overflow:hidden">${items.map((i) => {
+          const q = byId[i.id];
+          return `<div class="line" style="${q ? '' : 'opacity:.55'}">
+            <a href="/produkt/${esc(i.slug)}"><img src="${esc(i.cover_url || '')}" alt=""></a>
+            <div style="min-width:0">
+              <a href="/produkt/${esc(i.slug)}" class="strong clamp-1">${esc(i.title)}</a>
+              <div class="xs subtle mt-1">${esc(i.store_name || '')}</div>
+              ${warn[i.id] ? `<div class="xs c-amber mt-2 row gap-1">${icon('alert', 'i-xs')}${esc(warn[i.id])}</div>` : ''}
+              ${q && q.discount ? `<div class="xs c-green mt-2 row gap-1">${icon('ticket', 'i-xs')}Rabat −${fmt.money(q.discount)}</div>` : ''}
+              <button data-remove="${i.id}" class="btn btn-ghost btn-sm mt-2" style="padding:0 8px;margin-left:-8px">${icon('trash', 'i-sm')}Usuń</button>
+            </div>
+            <div class="text-right">
+              ${q && q.discount ? `<div class="price-old">${fmt.money(q.price)}</div>` : ''}
+              <div class="price ${(q ? q.total : i.price) ? '' : 'price-free'}">${fmt.price(q ? q.total : i.price)}</div>
+            </div>
+          </div>`;
+        }).join('')}</div>
+
+        <aside class="card card-pad" style="position:sticky;top:calc(var(--header-h) + 24px)">
+          <h2 class="h4">Podsumowanie</h2>
+          <form id="coupon-form" class="row gap-2 mt-4">
+            <div class="input-icon grow">${icon('ticket', 'i-md')}<input id="coupon" class="input" placeholder="Kod rabatowy" value="${esc(coupon)}" style="text-transform:uppercase" aria-label="Kod rabatowy"></div>
+            <button class="btn btn-secondary">Zastosuj</button>
+          </form>
+          ${quote.coupon ? `<div class="xs mt-2 row gap-1 ${quote.coupon.valid ? 'c-green' : 'c-amber'}">${icon(quote.coupon.valid ? 'check' : 'alert', 'i-xs')}${quote.coupon.valid ? `Kod ${esc(quote.coupon.code)} zastosowany` : `Kod ${esc(quote.coupon.code)} nie dotyczy produktów w koszyku`}</div>` : ''}
+          <div class="mt-6">
+            <div class="sum-row"><span>Wartość produktów</span><span class="num">${fmt.money(quote.subtotal)}</span></div>
+            ${quote.discount ? `<div class="sum-row c-green"><span>Rabat</span><span class="num">−${fmt.money(quote.discount)}</span></div>` : ''}
+            <div class="sum-total"><span class="strong">Do zapłaty</span><span class="price-big" style="font-size:28px">${fmt.money(quote.total)}</span></div>
+          </div>
+          <div class="mt-6">
+            ${VS.me ? `<button id="checkout" class="btn btn-primary btn-lg btn-block" ${quote.items.length ? '' : 'disabled'}>${icon('lock', 'i-md')}${quote.total ? 'Zapłać ' + fmt.money(quote.total) : 'Odbierz za darmo'}</button>`
+              : `<a href="/auth.html?next=/koszyk.html" class="btn btn-primary btn-lg btn-block">${icon('log-in', 'i-md')}Zaloguj się, aby kupić</a>
+                 <p class="xs subtle text-center mt-3">Nie masz konta? <a class="link" href="/auth.html?mode=register&next=/koszyk.html">Załóż je w 30 sekund</a></p>`}
+          </div>
+          <div id="demo-note" class="callout callout-amber mt-4 xs" ${provider === 'demo' ? '' : 'hidden'}>${icon('info', 'i-sm')}<span>Tryb demonstracyjny — płatność jest symulowana, nie pobieramy pieniędzy.</span></div>
+          <div class="divider mt-6 mb-4"></div>
+          <ul class="trust">
+            <li>${icon('shield-check', 'i-md')}Bezpieczna płatność, nie przechowujemy danych kart</li>
+            <li>${icon('zap', 'i-md')}Produkty i klucze od razu w bibliotece</li>
+          </ul>
+          <div class="pay-methods mt-4"><span>BLIK</span><span>VISA</span><span>Mastercard</span><span>Przelewy24</span><span>Apple Pay</span></div>
+        </aside>
+      </div>`;
+
+    root.querySelectorAll('[data-remove]').forEach((b) => b.onclick = () => VS.cart.remove(Number(b.dataset.remove)));
+    document.getElementById('coupon-form').onsubmit = (e) => { e.preventDefault(); coupon = document.getElementById('coupon').value.trim(); renderCart(); };
+    const btn = document.getElementById('checkout');
+    if (btn) btn.onclick = async () => {
+      btn.disabled = true; btn.innerHTML = 'Przetwarzanie płatności…';
+      try {
+        const r = await VS.api('/api/checkout', { method: 'POST', body: { items: quote.items.map((i) => i.product_id), coupon } });
+        location.href = r.redirect;
+      } catch (e) { VS.toast(e.message, 'err'); renderCart(); }
+    };
+  }
+
+  VS.meReady.then(() => {
+    if (params.get('order') && params.get('status') === 'success' && VS.me) success(params.get('order'));
+    else { if (params.get('status') === 'cancel') VS.toast('Płatność została anulowana', 'err'); renderCart(); }
+  });
+  document.addEventListener('cart:change', () => { if (!params.get('order')) renderCart(); });
+</script>
+</body>
+</html>

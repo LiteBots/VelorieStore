@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Sklep — Velorie Store</title>
+  <meta name="description" content="Przeglądaj skrypty FiveM, pluginy i mapy Minecraft, interiory, mody i więcej." />
+  <meta name="theme-color" content="#07080d" />
+  <link rel="icon" href="https://i.imgur.com/NDhlWyz.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/assets/css/app.css" />
+</head>
+<body>
+<div class="site">
+  <div id="vs-header"></div>
+  <main class="container" style="padding-top:40px">
+    <div class="page-head" style="margin-bottom:32px">
+      <div>
+        <div class="crumbs"><a href="/">Start</a><i data-i="chevron-right"></i><span>Sklep</span></div>
+        <h1 class="h1 mt-3" id="page-title">Wszystkie produkty</h1>
+        <p class="muted mt-2" id="page-sub">Zasoby od zweryfikowanych twórców — z licencją i aktualizacjami.</p>
+      </div>
+    </div>
+
+    <div class="shop-layout">
+      <aside class="filters" id="filters" aria-label="Filtry">
+        <div class="filters-group">
+          <div class="filters-title">Kategoria</div>
+          <div id="cat-list"></div>
+        </div>
+        <div class="filters-group">
+          <div class="filters-title">Cena</div>
+          <div class="row gap-2">
+            <input id="min" type="number" min="0" class="input input-sm" placeholder="Od zł" aria-label="Cena od" />
+            <span class="faint">–</span>
+            <input id="max" type="number" min="0" class="input input-sm" placeholder="Do zł" aria-label="Cena do" />
+          </div>
+          <label class="switch mt-4 small muted"><input id="free" type="checkbox" />Tylko darmowe</label>
+        </div>
+        <div class="filters-group">
+          <button id="reset" class="btn btn-ghost btn-sm" style="padding:0 8px"><i data-i="refresh" class="i-sm"></i>Wyczyść filtry</button>
+        </div>
+      </aside>
+
+      <section>
+        <div class="toolbar">
+          <div class="input-icon grow" style="max-width:420px">
+            <i data-i="search" class="i-md"></i>
+            <input id="q" class="input" placeholder="Szukaj po nazwie, tagu lub twórcy" aria-label="Szukaj" />
+          </div>
+          <button id="filters-toggle" class="btn btn-secondary show-md"><i data-i="filter" class="i-md"></i>Filtry</button>
+          <div class="row gap-3 ml-auto">
+            <span class="small subtle num" id="result-count"></span>
+            <select id="sort" class="select" style="width:auto;height:38px" aria-label="Sortowanie">
+              <option value="popular">Najpopularniejsze</option>
+              <option value="new">Najnowsze</option>
+              <option value="rating">Najwyżej oceniane</option>
+              <option value="updated">Ostatnio aktualizowane</option>
+              <option value="price_asc">Cena: od najniższej</option>
+              <option value="price_desc">Cena: od najwyższej</option>
+            </select>
+          </div>
+        </div>
+        <div id="active-chips" class="row wrap gap-2 mb-4"></div>
+        <div id="grid" class="grid g-3"></div>
+        <div id="pager" class="pagination"></div>
+      </section>
+    </div>
+  </main>
+  <div id="vs-footer"></div>
+</div>
+<script src="/assets/js/icons.js"></script>
+<script src="/assets/js/app.js"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  const catParam = params.get('category') || '';
+  VS.layout({ active: catParam.startsWith('fivem') && catParam.includes(',') ? 'FiveM' : catParam.startsWith('minecraft') && catParam.includes(',') ? 'Minecraft' : 'Sklep' });
+  const { esc, fmt, icon } = VS;
+  const $ = (id) => document.getElementById(id);
+  const state = {
+    q: params.get('q') || '', category: catParam.split(',').filter(Boolean),
+    sort: params.get('sort') || 'popular', min: params.get('min') || '', max: params.get('max') || '',
+    free: params.get('free') === '1', page: Number(params.get('page')) || 1, seller: params.get('seller') || '',
+  };
+  $('q').value = state.q; $('sort').value = state.sort; $('min').value = state.min; $('max').value = state.max; $('free').checked = state.free;
+
+  let cats = [];
+  VS.categories().then((c) => { cats = c; renderCats(); renderChips(); updateTitle(); });
+
+  function renderCats() {
+    const total = cats.reduce((s, c) => s + c.count, 0);
+    let group = '';
+    $('cat-list').innerHTML = `<button class="filter-opt ${state.category.length ? '' : 'on'}" data-cat="">${icon('grid', 'i-md')}Wszystkie<span class="count">${total}</span></button>` +
+      cats.map((c) => {
+        const head = c.group !== group ? `<div class="xs faint" style="padding:12px 10px 4px">${(group = c.group)}</div>` : '';
+        return `${head}<button class="filter-opt ${state.category.includes(c.id) ? 'on' : ''}" data-cat="${c.id}">${icon(VS.catIcon(c.id), 'i-md')}${esc(c.name)}<span class="count">${c.count}</span></button>`;
+      }).join('');
+    $('cat-list').querySelectorAll('[data-cat]').forEach((b) => b.onclick = () => {
+      const id = b.dataset.cat;
+      if (!id) state.category = [];
+      else if (state.category.includes(id)) state.category = state.category.filter((x) => x !== id);
+      else state.category = [...state.category, id];
+      state.page = 1; renderCats(); load();
+    });
+  }
+
+  function updateTitle() {
+    const one = state.category.length === 1 && cats.find((c) => c.id === state.category[0]);
+    const group = state.category.length > 1 && state.category.every((c) => c.startsWith('fivem')) ? 'FiveM' : state.category.length > 1 && state.category.every((c) => c.startsWith('minecraft')) ? 'Minecraft' : null;
+    $('page-title').textContent = state.q ? `Wyniki dla „${state.q}”` : one ? one.name : group ? `Zasoby ${group}` : state.free ? 'Darmowe produkty' : 'Wszystkie produkty';
+  }
+
+  function renderChips() {
+    const chips = [];
+    if (state.q) chips.push(['q', `„${state.q}”`]);
+    state.category.forEach((c) => chips.push(['cat:' + c, (cats.find((x) => x.id === c) || {}).name || c]));
+    if (state.free) chips.push(['free', 'Darmowe']);
+    if (state.min || state.max) chips.push(['price', `${state.min || 0} – ${state.max || '∞'} zł`]);
+    if (state.seller) chips.push(['seller', 'Twórca: ' + state.seller]);
+    $('active-chips').innerHTML = chips.map(([k, t]) => `<button data-chip="${esc(k)}" class="chip active">${esc(t)}${icon('x', 'i-xs')}</button>`).join('');
+    $('active-chips').hidden = !chips.length;
+    $('active-chips').querySelectorAll('[data-chip]').forEach((b) => b.onclick = () => {
+      const k = b.dataset.chip;
+      if (k === 'q') { state.q = ''; $('q').value = ''; }
+      else if (k.startsWith('cat:')) state.category = state.category.filter((c) => c !== k.slice(4));
+      else if (k === 'free') { state.free = false; $('free').checked = false; }
+      else if (k === 'price') { state.min = state.max = ''; $('min').value = $('max').value = ''; }
+      else if (k === 'seller') state.seller = '';
+      state.page = 1; renderCats(); load();
+    });
+  }
+
+  async function load() {
+    const p = new URLSearchParams();
+    if (state.q) p.set('q', state.q);
+    if (state.category.length) p.set('category', state.category.join(','));
+    if (state.sort !== 'popular') p.set('sort', state.sort);
+    if (state.min) p.set('min', state.min);
+    if (state.max) p.set('max', state.max);
+    if (state.free) p.set('free', '1');
+    if (state.seller) p.set('seller', state.seller);
+    if (state.page > 1) p.set('page', state.page);
+    history.replaceState(null, '', '/sklep.html' + (p.toString() ? '?' + p : ''));
+    renderChips(); updateTitle();
+    $('grid').innerHTML = Array.from({ length: 6 }, () => '<div class="skeleton" style="height:330px"></div>').join('');
+    p.set('sort', state.sort); p.set('limit', 12);
+    try {
+      const d = await VS.api('/api/products?' + p);
+      $('result-count').textContent = `${d.total} ${fmt.plural(d.total, 'wynik', 'wyniki', 'wyników')}`;
+      $('grid').innerHTML = d.items.length ? d.items.map(VS.productCard).join('') : `
+        <div class="card empty" style="grid-column:1/-1">
+          <span class="icon-box lg">${icon('search', 'i-lg')}</span>
+          <h3>Brak wyników</h3><p>Spróbuj innej frazy albo usuń część filtrów.</p>
+          <button class="btn btn-secondary mt-6" onclick="document.getElementById('reset').click()">Wyczyść filtry</button></div>`;
+      $('pager').innerHTML = d.pages > 1 ? `<button ${d.page === 1 ? 'disabled style="opacity:.4"' : ''} data-page="${d.page - 1}" aria-label="Poprzednia">${icon('chevron-left', 'i-md')}</button>` +
+        Array.from({ length: d.pages }, (_, i) => `<button data-page="${i + 1}" class="${i + 1 === d.page ? 'on' : ''}">${i + 1}</button>`).join('') +
+        `<button ${d.page === d.pages ? 'disabled style="opacity:.4"' : ''} data-page="${d.page + 1}" aria-label="Następna">${icon('chevron-right', 'i-md')}</button>` : '';
+      $('pager').querySelectorAll('[data-page]').forEach((b) => b.onclick = () => { state.page = Number(b.dataset.page); load(); scrollTo({ top: 0, behavior: 'smooth' }); });
+      VS.reveal();
+    } catch (e) { VS.toast(e.message, 'err'); }
+  }
+
+  let t;
+  $('q').oninput = () => { clearTimeout(t); t = setTimeout(() => { state.q = $('q').value.trim(); state.page = 1; load(); }, 300); };
+  $('sort').onchange = () => { state.sort = $('sort').value; state.page = 1; load(); };
+  ['min', 'max'].forEach((k) => $(k).onchange = () => { state[k] = $(k).value; state.page = 1; load(); });
+  $('free').onchange = () => { state.free = $('free').checked; state.page = 1; load(); };
+  $('reset').onclick = () => { Object.assign(state, { q: '', category: [], min: '', max: '', free: false, page: 1, seller: '' }); $('q').value = $('min').value = $('max').value = ''; $('free').checked = false; renderCats(); load(); };
+  $('filters-toggle').onclick = () => $('filters').classList.toggle('open');
+  load();
+</script>
+</body>
+</html>

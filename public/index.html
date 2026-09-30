@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Velorie Store — pluginy, skrypty FiveM, mapy i mody z licencją</title>
+  <meta name="description" content="Marketplace zasobów dla serwerów gier: pluginy i mapy Minecraft, skrypty, mapy i interiory FiveM, mody. Natychmiastowe pobieranie, klucze licencji i darmowe aktualizacje." />
+  <meta name="theme-color" content="#07080d" />
+  <meta property="og:title" content="Velorie Store" />
+  <meta property="og:description" content="Zasoby premium dla Twojego serwera — z licencją i aktualizacjami." />
+  <link rel="icon" href="https://i.imgur.com/NDhlWyz.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/assets/css/app.css" />
+</head>
+<body>
+<div class="site">
+  <div id="vs-header"></div>
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-grid-bg" aria-hidden="true"></div>
+      <div class="container">
+        <div class="hero-inner">
+          <a href="/docs.html" class="pill reveal"><span class="badge badge-brand">Nowość</span>API licencji dla pluginów i skryptów<i data-i="arrow-right" class="i-sm subtle"></i></a>
+          <h1 class="display mt-6 reveal">Zasoby premium<br>dla Twojego <span class="grad-text">serwera</span></h1>
+          <p class="lead reveal">Skrypty i interiory FiveM, pluginy i mapy Minecraft, mody i boty od zweryfikowanych twórców. Kupujesz raz — pobierasz od razu, z kluczem licencji i darmowymi aktualizacjami.</p>
+          <form action="/sklep.html" class="hero-search reveal" role="search">
+            <i data-i="search"></i>
+            <input name="q" class="input" placeholder="Czego szukasz? np. garaż, lobby, anticheat…" aria-label="Szukaj" autocomplete="off" />
+            <button class="btn btn-primary">Szukaj</button>
+          </form>
+          <div class="hero-tags reveal"><span>Popularne:</span>
+            <a href="/sklep.html?q=policja">policja</a><a href="/sklep.html?q=garaż">garaż</a><a href="/sklep.html?category=fivem-interiors">MLO</a><a href="/sklep.html?q=spawn">spawn</a><a href="/sklep.html?q=ekonomia">ekonomia</a><a href="/sklep.html?free=1">darmowe</a>
+          </div>
+        </div>
+        <div class="metrics reveal" id="metrics">
+          <div class="metric"><div class="metric-value" data-stat="products">—</div><div class="metric-label">produktów w sklepie</div></div>
+          <div class="metric"><div class="metric-value" data-stat="creators">—</div><div class="metric-label">zweryfikowanych twórców</div></div>
+          <div class="metric"><div class="metric-value" data-stat="sales">—</div><div class="metric-label">wydanych licencji</div></div>
+          <div class="metric"><div class="metric-value">24/7</div><div class="metric-label">natychmiastowe pobieranie</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KATEGORIE -->
+    <section class="section-sm">
+      <div class="container">
+        <div class="section-head">
+          <div><h2 class="h2">Przeglądaj kategorie</h2><p>Wszystko, czego potrzebuje nowoczesny serwer — w jednym miejscu.</p></div>
+          <a href="/sklep.html" class="btn btn-secondary">Wszystkie produkty<i data-i="arrow-right" class="i-md"></i></a>
+        </div>
+        <div id="categories" class="grid g-6"></div>
+      </div>
+    </section>
+
+    <!-- PRODUKTY -->
+    <section class="section-sm">
+      <div class="container">
+        <div class="section-head">
+          <div><h2 class="h2">Na topie</h2><p>Wybrane przez społeczność — najczęściej kupowane i najlepiej oceniane.</p></div>
+          <div class="seg" id="tabs" role="tablist">
+            <button data-sort="popular" class="on">Popularne</button><button data-sort="new">Nowe</button><button data-sort="rating">Najwyżej oceniane</button><button data-sort="free">Darmowe</button>
+          </div>
+        </div>
+        <div id="products" class="grid g-4"></div>
+        <div class="text-center mt-8"><a href="/sklep.html" id="more-link" class="btn btn-outline">Zobacz wszystkie<i data-i="arrow-right" class="i-md"></i></a></div>
+      </div>
+    </section>
+
+    <!-- PLATFORMY -->
+    <section class="section-sm">
+      <div class="container platforms">
+        <a href="/sklep.html?category=fivem-scripts,fivem-maps,fivem-interiors,fivem-vehicles" class="platform fivem reveal">
+          <div><span class="icon-box brand lg"><i data-i="car" class="i-lg"></i></span>
+            <h3 class="h2 mt-6">FiveM</h3>
+            <p class="muted mt-2" style="max-width:380px">Skrypty ESX i QBCore, mapy MLO, interiory i pojazdy — zoptymalizowane pod serwery RP.</p></div>
+          <div class="platform-links"><span class="chip">Skrypty</span><span class="chip">Mapy MLO</span><span class="chip">Interiory</span><span class="chip">Pojazdy</span></div>
+        </a>
+        <a href="/sklep.html?category=minecraft-plugins,minecraft-maps,minecraft-builds" class="platform mc reveal">
+          <div><span class="icon-box violet lg"><i data-i="blocks" class="i-lg"></i></span>
+            <h3 class="h2 mt-6">Minecraft</h3>
+            <p class="muted mt-2" style="max-width:380px">Pluginy Paper i Spigot, mapy minigier, spawny i lobby od doświadczonych buildteamów.</p></div>
+          <div class="platform-links"><span class="chip">Pluginy</span><span class="chip">Mapy</span><span class="chip">Spawny i lobby</span><span class="chip">Minigry</span></div>
+        </a>
+      </div>
+    </section>
+
+    <!-- LICENCJE -->
+    <section class="section">
+      <div class="container">
+        <div class="grid g-2" style="gap:56px;align-items:center">
+          <div class="reveal">
+            <span class="eyebrow"><i data-i="key" class="i-sm"></i>System licencji</span>
+            <h2 class="h2 mt-4">Każdy zakup chroniony kluczem licencji</h2>
+            <p class="lead mt-4">Twórcy wbudowują weryfikację w swój kod. Klient wkleja klucz do configu, a Velorie pilnuje limitu serwerów i unieważnia klucze z wycieków.</p>
+            <ul class="stack-3 mt-6">
+              <li class="row-top gap-3"><span class="icon-box sm green"><i data-i="check" class="i-sm"></i></span><div><div class="strong">Limit serwerów na licencję</div><div class="small subtle">Aktywacje resetujesz jednym kliknięciem przy zmianie hostingu.</div></div></li>
+              <li class="row-top gap-3"><span class="icon-box sm green"><i data-i="check" class="i-sm"></i></span><div><div class="strong">Gotowe integracje</div><div class="small subtle">Java (Spigot/Paper), Lua (FiveM), JavaScript i Python.</div></div></li>
+              <li class="row-top gap-3"><span class="icon-box sm green"><i data-i="check" class="i-sm"></i></span><div><div class="strong">Darmowe aktualizacje</div><div class="small subtle">Nowe wersje trafiają od razu do biblioteki kupujących.</div></div></li>
+            </ul>
+            <a href="/docs.html" class="btn btn-secondary mt-8">Dokumentacja API<i data-i="arrow-right" class="i-md"></i></a>
+          </div>
+          <div class="reveal">
+            <div class="mock">
+              <div class="mock-bar"><i></i><i></i><i></i><span class="xs subtle mono" style="margin-left:10px">server.lua</span></div>
+<pre class="code" style="border:0;border-radius:0;margin:0"><span class="c">-- Weryfikacja licencji Velorie</span>
+<span class="k">local</span> key = GetConvar(<span class="s">'velorie_license'</span>, <span class="s">''</span>)
+
+PerformHttpRequest(API, <span class="k">function</span>(status, body)
+  <span class="k">local</span> data = json.decode(body)
+  <span class="k">if not</span> data.valid <span class="k">then</span>
+    StopResource(GetCurrentResourceName())
+  <span class="k">end</span>
+<span class="k">end</span>, <span class="s">'POST'</span>, json.encode({ license_key = key }))</pre>
+              <div style="padding:16px;border-top:1px solid var(--line)" class="row gap-3">
+                <span class="icon-box sm green"><i data-i="shield-check" class="i-sm"></i></span>
+                <div class="grow"><div class="small strong">Licencja aktywna</div><div class="xs subtle mono">VEL-8KQ2-M7XP-4TZN-R9WD · 1/2 serwery</div></div>
+                <span class="badge badge-green"><span class="dot"></span>valid</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DLACZEGO -->
+    <section class="section-sm">
+      <div class="container">
+        <div class="section-head-center reveal">
+          <h2 class="h2">Zbudowane dla serwerów, które traktują jakość poważnie</h2>
+          <p>Bez ręcznego wysyłania plików, bez szukania klucza w wiadomościach. Wszystko działa automatycznie.</p>
+        </div>
+        <div class="bento">
+          <div class="feature reveal span-4">
+            <div class="row between wrap gap-4">
+              <div><span class="icon-box brand"><i data-i="zap"></i></span><h3>Natychmiastowa dostawa</h3><p>Plik, klucz licencji i instrukcja pojawiają się w bibliotece sekundę po płatności.</p></div>
+              <div class="mock" style="width:min(320px,100%);box-shadow:none">
+                <div class="mock-body">
+                  <div class="row gap-3"><span class="icon-box sm"><i data-i="archive" class="i-sm"></i></span><div class="grow"><div class="small strong">advanced-garage.zip</div><div class="xs subtle">v1.2.0 · 4,8 MB</div></div><span class="btn btn-primary btn-sm btn-icon"><i data-i="download" class="i-sm"></i></span></div>
+                  <div class="progress mt-4"><div style="width:100%"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="feature reveal"><span class="icon-box"><i data-i="shield-check"></i></span><h3>Zweryfikowani twórcy</h3><p>Recenzje wystawiają wyłącznie osoby, które kupiły produkt.</p></div>
+          <div class="feature reveal"><span class="icon-box"><i data-i="branch"></i></span><h3>Changelog i wersje</h3><p>Pełna historia zmian przy każdym produkcie.</p></div>
+          <div class="feature reveal"><span class="icon-box"><i data-i="ticket"></i></span><h3>Kody rabatowe</h3><p>Promocje twórców naliczane automatycznie w koszyku.</p></div>
+          <div class="feature reveal"><span class="icon-box"><i data-i="headset"></i></span><h3>Wsparcie twórcy</h3><p>Kontakt i pomoc przy instalacji na Discordzie.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- JAK TO DZIAŁA -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head-center reveal"><h2 class="h2">Od zakupu do działającego serwera w minutę</h2></div>
+        <div class="steps reveal">
+          <div class="step"><div class="step-n">01</div><h3>Wybierz produkt</h3><p>Filtruj po platformie, cenie i ocenach społeczności.</p></div>
+          <div class="step"><div class="step-n">02</div><h3>Zapłać bezpiecznie</h3><p>Karta, BLIK lub przelew. Kody rabatowe twórców.</p></div>
+          <div class="step"><div class="step-n">03</div><h3>Pobierz z biblioteki</h3><p>Plik jest dostępny od razu i przy każdej aktualizacji.</p></div>
+          <div class="step"><div class="step-n">04</div><h3>Aktywuj licencję</h3><p>Wklej klucz do configu — gotowe.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TWÓRCY -->
+    <section class="section-sm">
+      <div class="container">
+        <div class="section-head">
+          <div><h2 class="h2">Twórcy na Velorie</h2><p>Studia i niezależni developerzy, którzy sprzedają u nas swoje zasoby.</p></div>
+          <a href="/tworcy.html" class="btn btn-secondary">Zostań twórcą<i data-i="arrow-right" class="i-md"></i></a>
+        </div>
+        <div id="creators" class="grid g-3"></div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section" id="faq">
+      <div class="container container-sm">
+        <div class="section-head-center reveal"><h2 class="h2">Najczęstsze pytania</h2></div>
+        <div class="faq reveal">
+          <details><summary>Czym jest licencja i jak ją aktywować?<i data-i="plus"></i></summary><p>Każdy zakup generuje unikalny klucz przypisany do Twojego konta. Wklejasz go do configu produktu — przy starcie serwera zasób sprawdza klucz przez API Velorie. Limit serwerów ustala twórca, a aktywacje resetujesz w panelu.</p></details>
+          <details><summary>Czy aktualizacje są płatne?<i data-i="plus"></i></summary><p>Nie. Po zakupie zawsze pobierasz najnowszą wersję pliku z biblioteki, a w zakładce „Aktualizacje” widzisz pełny changelog.</p></details>
+          <details><summary>Jakie metody płatności są dostępne?<i data-i="plus"></i></summary><p>Karta płatnicza, BLIK i szybkie przelewy obsługiwane przez bezpieczną bramkę płatności. Nie przechowujemy danych kart.</p></details>
+          <details><summary>Co jeśli produkt nie działa?<i data-i="plus"></i></summary><p>Skontaktuj się z twórcą przez jego profil lub Discord. W przypadku sporu nasz zespół pomoże rozwiązać problem.</p></details>
+          <details><summary>Ile kosztuje sprzedaż na Velorie?<i data-i="plus"></i></summary><p>Wystawianie produktów jest darmowe. Pobieramy prowizję tylko od sprzedaży, a resztę wypłacasz z panelu twórcy. Szczegóły na stronie <a class="link" href="/tworcy.html">Dla twórców</a>.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section-sm">
+      <div class="container">
+        <div class="cta reveal">
+          <h2 class="h1">Tworzysz dla społeczności? <span class="grad-text">Sprzedawaj u nas.</span></h2>
+          <p class="lead mt-4" style="max-width:560px;margin-left:auto;margin-right:auto">Płatności, dostawa plików, licencje i statystyki — gotowe od pierwszego dnia. Ty skupiasz się na tworzeniu.</p>
+          <div class="row center gap-3 wrap mt-8">
+            <a href="/tworcy.html" class="btn btn-primary btn-lg">Otwórz sklep twórcy</a>
+            <a href="https://discord.gg/velorie" target="_blank" rel="noopener" class="btn btn-secondary btn-lg"><i data-i="discord" class="i-md"></i>Dołącz na Discord</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div id="vs-footer"></div>
+</div>
+<script src="/assets/js/icons.js"></script>
+<script src="/assets/js/app.js"></script>
+<script>
+  VS.layout({ active: null });
+  const { esc, fmt, icon } = VS;
+
+  VS.api('/api/stats/public').then((s) => {
+    document.querySelectorAll('[data-stat]').forEach((el) => { el.textContent = fmt.num(s[el.dataset.stat]); });
+  }).catch(() => {});
+
+  VS.categories().then((cats) => {
+    const top = [...cats].sort((a, b) => b.count - a.count).slice(0, 6);
+    document.getElementById('categories').innerHTML = top.map((c) => `
+      <a href="/sklep.html?category=${c.id}" class="cat-tile reveal">
+        <span class="icon-box">${icon(VS.catIcon(c.id))}</span>
+        <div><div class="cat-tile-name">${esc(c.name)}</div><div class="cat-tile-count">${c.count} ${fmt.plural(c.count, 'produkt', 'produkty', 'produktów')}</div></div>
+      </a>`).join('');
+    VS.reveal();
+  });
+
+  const grid = document.getElementById('products');
+  async function loadProducts(sort) {
+    grid.innerHTML = Array.from({ length: 8 }, () => '<div class="skeleton" style="height:330px"></div>').join('');
+    const qs = sort === 'free' ? 'free=1&sort=popular' : `sort=${sort}`;
+    document.getElementById('more-link').href = '/sklep.html?' + qs;
+    const d = await VS.api(`/api/products?${qs}&limit=8`);
+    grid.innerHTML = d.items.map(VS.productCard).join('') || '<div class="empty" style="grid-column:1/-1"><p>Brak produktów w tej kategorii.</p></div>';
+    VS.reveal();
+  }
+  document.querySelectorAll('#tabs button').forEach((b) => b.onclick = () => {
+    document.querySelectorAll('#tabs button').forEach((x) => x.classList.toggle('on', x === b));
+    loadProducts(b.dataset.sort);
+  });
+  loadProducts('popular');
+
+  // Twórcy wyliczeni z katalogu
+  VS.api('/api/products?limit=60&sort=popular').then((d) => {
+    const stores = {};
+    d.items.forEach((p) => {
+      const s = (stores[p.store_slug] ??= { slug: p.store_slug, name: p.store_name, avatar_url: p.seller_avatar, products: 0, sales: 0, covers: [], cats: new Set() });
+      s.products++; s.sales += p.sales; s.cats.add(VS.CAT_NAMES[p.category]);
+      if (s.covers.length < 3) s.covers.push(p.cover_url);
+    });
+    document.getElementById('creators').innerHTML = Object.values(stores).sort((a, b) => b.sales - a.sales).slice(0, 3).map((s) => `
+      <a href="/tworca/${esc(s.slug)}" class="card card-hover reveal" style="overflow:hidden">
+        <div class="grid" style="grid-template-columns:2fr 1fr;gap:2px;height:150px;background:var(--line)">
+          <img src="${esc(s.covers[0] || '')}" style="width:100%;height:100%;object-fit:cover" alt="">
+          <div class="grid" style="gap:2px;grid-template-rows:1fr 1fr"><img src="${esc(s.covers[1] || s.covers[0] || '')}" style="width:100%;height:100%;object-fit:cover" alt=""><img src="${esc(s.covers[2] || s.covers[0] || '')}" style="width:100%;height:100%;object-fit:cover" alt=""></div>
+        </div>
+        <div class="card-pad-sm row gap-3" style="padding:16px 18px">
+          ${VS.avatar({ store_name: s.name, avatar_url: s.avatar_url }, 'avatar-lg avatar-sq')}
+          <div class="grow"><div class="row gap-2 strong">${esc(s.name)}${icon('check-circle', 'i-sm verified')}</div><div class="xs subtle truncate">${[...s.cats].slice(0, 2).join(' · ')}</div></div>
+          <div class="text-right"><div class="strong num">${fmt.num(s.sales)}</div><div class="xs subtle">sprzedaży</div></div>
+        </div>
+      </a>`).join('');
+    VS.reveal();
+  });
+</script>
+</body>
+</html>

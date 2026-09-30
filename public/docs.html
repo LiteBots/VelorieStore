@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>API licencji — Velorie Store Docs</title>
+  <meta name="theme-color" content="#07080d" />
+  <link rel="icon" href="https://i.imgur.com/NDhlWyz.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/assets/css/app.css" />
+  <style>
+    .docs { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 56px; padding-top: 40px; }
+    .toc { position: sticky; top: calc(var(--header-h) + 32px); align-self: start; }
+    .toc a { display: block; padding: 6px 12px; border-left: 1px solid var(--line); font-size: 14px; color: var(--text-3); }
+    .toc a:hover { color: var(--text); border-color: var(--line-3); }
+    .toc a.on { color: var(--text); border-color: var(--brand); }
+    .doc section { scroll-margin-top: calc(var(--header-h) + 24px); }
+    .doc section + section { margin-top: 56px; padding-top: 56px; border-top: 1px solid var(--line); }
+    .endpoint { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: var(--r-md); background: var(--bg-2); border: 1px solid var(--line-2); font-family: var(--mono); font-size: 13px; overflow-x: auto; }
+    .method { font-weight: 700; font-size: 11px; padding: 3px 7px; border-radius: 5px; background: var(--green-soft); color: var(--green); }
+    .params td:first-child { font-family: var(--mono); font-size: 13px; color: var(--text); white-space: nowrap; }
+    .code-tabs { display: flex; gap: 2px; padding: 6px; border-bottom: 1px solid var(--line); background: var(--surface); overflow-x: auto; }
+    .code-tabs button { height: 30px; padding: 0 12px; border-radius: 7px; font-size: 13px; font-weight: 550; color: var(--text-3); white-space: nowrap; }
+    .code-tabs button.on { background: var(--surface-3); color: var(--text); }
+    @media (max-width: 900px) { .docs { grid-template-columns: 1fr; } .toc { display: none; } }
+  </style>
+</head>
+<body>
+<div class="site">
+  <div id="vs-header"></div>
+  <main class="container">
+    <div class="docs">
+      <nav class="toc" aria-label="Spis treści">
+        <div class="filters-title" style="padding-left:12px">API licencji</div>
+        <a href="#wstep" class="on">Wprowadzenie</a>
+        <a href="#weryfikacja">Weryfikacja klucza</a>
+        <a href="#odpowiedzi">Odpowiedzi i błędy</a>
+        <a href="#dezaktywacja">Zwolnienie aktywacji</a>
+        <a href="#przyklady">Przykłady integracji</a>
+        <a href="#dobre-praktyki">Dobre praktyki</a>
+      </nav>
+
+      <article class="doc">
+        <section id="wstep">
+          <div class="crumbs"><a href="/tworcy.html">Dla twórców</a><i data-i="chevron-right"></i><span>Dokumentacja</span></div>
+          <h1 class="h1 mt-4">API licencji</h1>
+          <p class="lead mt-4">Każdy zakup w Velorie Store generuje unikalny klucz <span class="mono strong">VEL-XXXX-XXXX-XXXX-XXXX</span>. Twój plugin, skrypt lub mod sprawdza go przy starcie. Jeśli klucz jest nieważny, unieważniony albo przekroczono limit serwerów — zasób się wyłącza.</p>
+          <div class="grid g-3 mt-8">
+            <div class="feature"><span class="icon-box sm brand"><i data-i="zap" class="i-sm"></i></span><h3 style="font-size:15px">Bez klucza API</h3><p>Endpoint weryfikacji jest publiczny — nie musisz przechowywać sekretów w kodzie.</p></div>
+            <div class="feature"><span class="icon-box sm brand"><i data-i="server" class="i-sm"></i></span><h3 style="font-size:15px">Limit serwerów</h3><p>Każdy nowy identyfikator serwera zużywa jedną aktywację licencji.</p></div>
+            <div class="feature"><span class="icon-box sm brand"><i data-i="ban" class="i-sm"></i></span><h3 style="font-size:15px">Unieważnianie</h3><p>Klucz z wycieku wyłączasz jednym kliknięciem w panelu twórcy.</p></div>
+          </div>
+        </section>
+
+        <section id="weryfikacja">
+          <h2 class="h2">Weryfikacja klucza</h2>
+          <p class="muted mt-3">Wywołaj przy starcie zasobu (i opcjonalnie cyklicznie, np. co 6 godzin).</p>
+          <div class="endpoint mt-6"><span class="method">POST</span><span id="endpoint"></span><button class="btn btn-ghost btn-sm btn-icon ml-auto" id="copy-ep" aria-label="Kopiuj adres"><i data-i="copy" class="i-sm"></i></button></div>
+          <div class="card mt-6" style="overflow:hidden"><div class="table-wrap"><table class="table params">
+            <thead><tr><th>Parametr</th><th>Typ</th><th>Opis</th></tr></thead>
+            <tbody>
+              <tr><td>license_key</td><td><span class="badge">string</span></td><td>Klucz klienta. <span class="badge badge-brand" style="height:20px">wymagany</span></td></tr>
+              <tr><td>product_id</td><td><span class="badge">number</span></td><td>ID produktu z panelu twórcy. Zalecany — blokuje użycie klucza kupionego do innego produktu.</td></tr>
+              <tr><td>identifier</td><td><span class="badge">string</span></td><td>Stały identyfikator serwera (np. <span class="mono">IP:port</span>, adres cfx.re). Domyślnie adres IP.</td></tr>
+            </tbody>
+          </table></div></div>
+        </section>
+
+        <section id="odpowiedzi">
+          <h2 class="h2">Odpowiedzi i błędy</h2>
+          <p class="muted mt-3">API zawsze zwraca status <span class="mono">200</span> z polem <span class="mono">valid</span> — łatwo to obsłużyć w każdym języku. Status <span class="mono">429</span> oznacza przekroczenie limitu 120 zapytań na minutę.</p>
+          <div class="grid g-2 mt-6">
+            <div><div class="label">Licencja poprawna</div><pre class="code">{
+  <span class="n">"valid"</span>: <span class="k">true</span>,
+  <span class="n">"license"</span>: {
+    <span class="n">"product_id"</span>: 12,
+    <span class="n">"product"</span>: <span class="s">"Advanced Garage System"</span>,
+    <span class="n">"latest_version"</span>: <span class="s">"1.2.0"</span>,
+    <span class="n">"owner"</span>: <span class="s">"GraczDemo"</span>,
+    <span class="n">"activations"</span>: 1,
+    <span class="n">"max_activations"</span>: 2
+  }
+}</pre></div>
+            <div><div class="label">Licencja odrzucona</div><pre class="code">{
+  <span class="n">"valid"</span>: <span class="k">false</span>,
+  <span class="n">"reason"</span>: <span class="s">"activation_limit"</span>,
+  <span class="n">"message"</span>: <span class="s">"Osiągnięto limit aktywacji (2)."</span>
+}</pre></div>
+          </div>
+          <div class="card mt-6" style="overflow:hidden"><div class="table-wrap"><table class="table params">
+            <thead><tr><th>reason</th><th>Znaczenie</th></tr></thead>
+            <tbody>
+              <tr><td>missing_key</td><td>Nie przesłano klucza.</td></tr>
+              <tr><td>not_found</td><td>Klucz nie istnieje.</td></tr>
+              <tr><td>wrong_product</td><td>Klucz należy do innego produktu niż <span class="mono">product_id</span>.</td></tr>
+              <tr><td>revoked</td><td>Twórca unieważnił licencję.</td></tr>
+              <tr><td>activation_limit</td><td>Wykorzystano limit serwerów — klient może zwolnić aktywacje w panelu.</td></tr>
+            </tbody>
+          </table></div></div>
+        </section>
+
+        <section id="dezaktywacja">
+          <h2 class="h2">Zwolnienie aktywacji</h2>
+          <p class="muted mt-3">Wywołaj przy trwałym wyłączeniu serwera, aby zwolnić miejsce w limicie.</p>
+          <div class="endpoint mt-6"><span class="method">POST</span><span id="endpoint2"></span></div>
+          <p class="small subtle mt-3">Parametry: <span class="mono">license_key</span>, <span class="mono">identifier</span>.</p>
+        </section>
+
+        <section id="przyklady">
+          <h2 class="h2">Przykłady integracji</h2>
+          <p class="muted mt-3">Gotowy kod do wklejenia. Podmień <span class="mono">PRODUCT_ID</span> na ID swojego produktu.</p>
+          <div class="card mt-6" style="overflow:hidden">
+            <div class="code-tabs" id="tabs"></div>
+            <div class="relative"><button id="copy-code" class="btn btn-secondary btn-sm" style="position:absolute;right:12px;top:12px;z-index:1"><i data-i="copy" class="i-sm"></i>Kopiuj</button>
+              <pre class="code" id="code" style="border:0;border-radius:0;min-height:360px"></pre></div>
+          </div>
+        </section>
+
+        <section id="dobre-praktyki">
+          <h2 class="h2">Dobre praktyki</h2>
+          <div class="grid g-2 mt-6">
+            <div class="feature"><span class="icon-box sm"><i data-i="shield" class="i-sm"></i></span><h3 style="font-size:15px">Weryfikuj po stronie serwera</h3><p>W FiveM tylko w <span class="mono">server.lua</span>. W Javie zaciemnij kod (np. ProGuard).</p></div>
+            <div class="feature"><span class="icon-box sm"><i data-i="clock" class="i-sm"></i></span><h3 style="font-size:15px">Cache na wypadek awarii</h3><p>Zapamiętaj ostatni poprawny wynik i pozwól na start przez 24 h, jeśli API jest nieosiągalne.</p></div>
+            <div class="feature"><span class="icon-box sm"><i data-i="refresh" class="i-sm"></i></span><h3 style="font-size:15px">Informuj o aktualizacjach</h3><p>Porównaj <span class="mono">latest_version</span> z wersją zasobu i wypisz komunikat w konsoli.</p></div>
+            <div class="feature"><span class="icon-box sm"><i data-i="server" class="i-sm"></i></span><h3 style="font-size:15px">Stały identyfikator</h3><p>Używaj wartości, która nie zmienia się przy restarcie — inaczej klient szybko wyczerpie limit.</p></div>
+          </div>
+        </section>
+      </article>
+    </div>
+  </main>
+  <div id="vs-footer"></div>
+</div>
+<script src="/assets/js/icons.js"></script>
+<script src="/assets/js/app.js"></script>
+<script>
+  VS.layout({ active: 'Docs' });
+  const API = location.origin + '/api/v1/licenses/verify';
+  document.getElementById('endpoint').textContent = API;
+  document.getElementById('endpoint2').textContent = location.origin + '/api/v1/licenses/deactivate';
+  document.getElementById('copy-ep').onclick = () => VS.copy(API);
+  const SNIPPETS = {
+    'Java · Spigot/Paper': `import java.net.URI;
+import java.net.http.*;
+import java.time.Duration;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.java.JavaPlugin;
+
+public final class MyPlugin extends JavaPlugin {
+    private static final String API = "${API}";
+    private static final int PRODUCT_ID = 1; // ID produktu z panelu twórcy
+
+    @Override
+    public void onEnable() {
+        saveDefaultConfig();
+        String key = getConfig().getString("license-key", "");
+        if (!verifyLicense(key)) {
+            getLogger().severe("Nieprawidłowa licencja Velorie — wyłączam plugin.");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
+        getLogger().info("Licencja Velorie aktywna.");
+    }
+
+    private boolean verifyLicense(String key) {
+        try {
+            String id = Bukkit.getServer().getIp() + ":" + Bukkit.getServer().getPort();
+            String body = String.format("{\\"license_key\\":\\"%s\\",\\"product_id\\":%d,\\"identifier\\":\\"%s\\"}", key, PRODUCT_ID, id);
+            HttpRequest req = HttpRequest.newBuilder(URI.create(API))
+                .timeout(Duration.ofSeconds(10))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(body)).build();
+            HttpResponse<String> res = HttpClient.newHttpClient().send(req, HttpResponse.BodyHandlers.ofString());
+            return res.statusCode() == 200 && res.body().contains("\\"valid\\":true");
+        } catch (Exception e) {
+            getLogger().warning("Brak połączenia z Velorie: " + e.getMessage());
+            return false;
+        }
+    }
+}`,
+    'Lua · FiveM': `-- server.lua   (server.cfg:  set velorie_license "VEL-XXXX-XXXX-XXXX-XXXX")
+local API = '${API}'
+local PRODUCT_ID = 1 -- ID produktu z panelu twórcy
+
+CreateThread(function()
+    local payload = json.encode({
+        license_key = GetConvar('velorie_license', ''),
+        product_id  = PRODUCT_ID,
+        identifier  = GetConvar('web_baseUrl', GetConvar('sv_hostname', 'fivem'))
+    })
+
+    PerformHttpRequest(API, function(status, body)
+        local data = body and json.decode(body) or {}
+        if status ~= 200 or not data.valid then
+            print(('^1[Velorie] Licencja nieprawidłowa: %s^0'):format(data.message or 'brak połączenia'))
+            StopResource(GetCurrentResourceName())
+            return
+        end
+        print(('^2[Velorie] Licencja aktywna (%s)^0'):format(data.license.owner))
+    end, 'POST', payload, { ['Content-Type'] = 'application/json' })
+end)`,
+    'JavaScript · Node': `const API = '${API}';
+
+async function verifyLicense(key, productId, identifier) {
+  const res = await fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ license_key: key, product_id: productId, identifier }),
+  });
+  const data = await res.json();
+  if (!data.valid) throw new Error(data.message);
+  return data.license;
+}
+
+verifyLicense(process.env.VELORIE_LICENSE, 1, require('os').hostname())
+  .then((l) => console.log('Licencja OK —', l.owner))
+  .catch((e) => { console.error('Licencja:', e.message); process.exit(1); });`,
+    Python: `import requests, socket
+
+API = "${API}"
+
+def verify_license(key: str, product_id: int) -> bool:
+    r = requests.post(API, json={
+        "license_key": key,
+        "product_id": product_id,
+        "identifier": socket.gethostname(),
+    }, timeout=10)
+    data = r.json()
+    if not data.get("valid"):
+        print("Licencja nieprawidłowa:", data.get("message"))
+        return False
+    return True`,
+    cURL: `curl -X POST ${API} \\
+  -H "Content-Type: application/json" \\
+  -d '{"license_key":"VEL-XXXX-XXXX-XXXX-XXXX","product_id":1,"identifier":"srv-1"}'`,
+  };
+  const tabs = document.getElementById('tabs');
+  tabs.innerHTML = Object.keys(SNIPPETS).map((n) => `<button>${n}</button>`).join('');
+  const show = (name) => {
+    document.getElementById('code').textContent = SNIPPETS[name];
+    tabs.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.textContent === name));
+  };
+  tabs.querySelectorAll('button').forEach((b) => b.onclick = () => show(b.textContent));
+  show('Java · Spigot/Paper');
+  document.getElementById('copy-code').onclick = () => VS.copy(document.getElementById('code').textContent, 'Skopiowano kod');
+
+  // Podświetlanie spisu treści
+  const links = [...document.querySelectorAll('.toc a')];
+  const io = new IntersectionObserver((es) => es.forEach((e) => {
+    if (e.isIntersecting) links.forEach((a) => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id));
+  }), { rootMargin: '-30% 0px -60% 0px' });
+  document.querySelectorAll('.doc section').forEach((s) => io.observe(s));
+</script>
+</body>
+</html>

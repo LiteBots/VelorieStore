@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Sprzedawaj na Velorie — dla twórców</title>
+  <meta name="description" content="Sprzedawaj pluginy, skrypty, mapy i mody. Płatności, dostawa plików, licencje i statystyki — gotowe od pierwszego dnia." />
+  <meta name="theme-color" content="#07080d" />
+  <link rel="icon" href="https://i.imgur.com/NDhlWyz.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/assets/css/app.css" />
+  <style>
+    .dash { display: grid; grid-template-columns: 180px minmax(0, 1fr); min-height: 360px; }
+    .dash-side { border-right: 1px solid var(--line); padding: 14px 10px; background: var(--surface); }
+    .dash-side div { height: 28px; border-radius: 7px; display: flex; align-items: center; gap: 8px; padding: 0 10px; font-size: 12px; color: var(--text-3); }
+    .dash-side div.on { background: var(--surface-3); color: var(--text); }
+    .dash-side .i { width: 14px; height: 14px; }
+    @media (max-width: 720px) { .dash { grid-template-columns: 1fr; } .dash-side { display: none; } }
+    .calc input[type=range] { width: 100%; accent-color: var(--brand); }
+    .earn { font-family: var(--font-display); font-size: 44px; font-weight: 700; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+<div class="site">
+  <div id="vs-header"></div>
+  <main>
+    <section class="hero" style="padding-bottom:40px">
+      <div class="hero-grid-bg" aria-hidden="true"></div>
+      <div class="container">
+        <div class="hero-inner">
+          <span class="eyebrow reveal"><i data-i="rocket" class="i-sm"></i>Dla twórców</span>
+          <h1 class="display mt-4 reveal" style="font-size:clamp(38px,5.4vw,64px)">Sprzedawaj swoje zasoby.<br><span class="grad-text">Resztą zajmiemy się my.</span></h1>
+          <p class="lead reveal">Płatności, dostawa plików, klucze licencji, aktualizacje i statystyki — gotowe od pierwszego dnia. Bez abonamentu, płacisz tylko prowizję od sprzedaży.</p>
+          <div class="row center gap-3 wrap mt-8 reveal">
+            <a href="/panel.html#/seller/join" class="btn btn-primary btn-lg">Otwórz sklep za darmo</a>
+            <a href="/docs.html" class="btn btn-secondary btn-lg"><i data-i="book" class="i-md"></i>API licencji</a>
+          </div>
+        </div>
+
+        <div class="mock mt-12 reveal" style="max-width:1040px;margin-left:auto;margin-right:auto">
+          <div class="mock-bar"><i></i><i></i><i></i><span class="xs subtle" style="margin-left:10px">velorie.store/panel — Statystyki</span></div>
+          <div class="dash">
+            <div class="dash-side">
+              <div class="on"><i data-i="chart"></i>Statystyki</div><div><i data-i="package"></i>Produkty</div><div><i data-i="bag"></i>Sprzedaż</div>
+              <div><i data-i="shield-check"></i>Licencje</div><div><i data-i="ticket"></i>Kody rabatowe</div><div><i data-i="wallet"></i>Wypłaty</div>
+            </div>
+            <div class="mock-body">
+              <div class="mock-kpis" style="grid-template-columns:repeat(4,1fr)">
+                <div class="mock-kpi"><span class="xs subtle">Przychód</span><b>12 480 zł</b><span class="xs c-green">+18,2%</span></div>
+                <div class="mock-kpi"><span class="xs subtle">Sprzedaże</span><b>146</b><span class="xs c-green">+9,4%</span></div>
+                <div class="mock-kpi"><span class="xs subtle">Konwersja</span><b>3,8%</b><span class="xs c-green">+0,6 pp</span></div>
+                <div class="mock-kpi"><span class="xs subtle">Do wypłaty</span><b>4 210 zł</b><span class="xs subtle">dostępne</span></div>
+              </div>
+              <div class="mock-kpi mt-3" style="padding:16px">
+                <div class="row between"><span class="small strong">Przychód dzienny</span><span class="xs subtle">30 dni</span></div>
+                <svg viewBox="0 0 600 150" preserveAspectRatio="none" style="width:100%;height:150px;margin-top:10px">
+                  <defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff0354" stop-opacity=".35"/><stop offset="1" stop-color="#ff0354" stop-opacity="0"/></linearGradient></defs>
+                  <g stroke="rgba(255,255,255,.05)"><path d="M0 37h600M0 75h600M0 112h600"/></g>
+                  <path d="M0 120 C40 112 60 118 90 100 S150 70 190 84 S250 60 290 66 S350 40 390 52 S450 30 490 38 S560 14 600 20 L600 150 L0 150Z" fill="url(#ga)"/>
+                  <path d="M0 120 C40 112 60 118 90 100 S150 70 190 84 S250 60 290 66 S350 40 390 52 S450 30 490 38 S560 14 600 20" fill="none" stroke="#ff0354" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-sm">
+      <div class="container">
+        <div class="section-head-center reveal"><h2 class="h2">Wszystko, czego potrzebujesz, żeby sprzedawać profesjonalnie</h2></div>
+        <div class="grid g-3">
+          <div class="feature reveal"><span class="icon-box brand"><i data-i="key"></i></span><h3>Licencje i API</h3><p>Automatyczne klucze VEL-…, limit serwerów, unieważnianie i gotowe snippety w Java, Lua, JS i Pythonie.</p></div>
+          <div class="feature reveal"><span class="icon-box brand"><i data-i="chart"></i></span><h3>Statystyki sprzedaży</h3><p>Przychód brutto i netto, konwersja, najlepsze produkty i wykresy dzienne z porównaniem okresów.</p></div>
+          <div class="feature reveal"><span class="icon-box brand"><i data-i="branch"></i></span><h3>Wersje i changelog</h3><p>Wgraj nową wersję — kupujący od razu widzą listę zmian i pobierają aktualizację.</p></div>
+          <div class="feature reveal"><span class="icon-box"><i data-i="ticket"></i></span><h3>Kody rabatowe</h3><p>Procentowe kupony na cały sklep lub wybrany produkt, z limitem użyć i datą ważności.</p></div>
+          <div class="feature reveal"><span class="icon-box"><i data-i="wallet"></i></span><h3>Wypłaty</h3><p>Przelew, PayPal lub Revolut. Zlecasz wypłatę z panelu, gdy tylko chcesz.</p></div>
+          <div class="feature reveal"><span class="icon-box"><i data-i="receipt"></i></span><h3>Eksport CSV</h3><p>Pełna historia sprzedaży z prowizjami do rozliczeń i księgowości.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="cennik">
+      <div class="container">
+        <div class="grid g-2" style="gap:48px;align-items:center">
+          <div class="reveal">
+            <span class="eyebrow"><i data-i="percent" class="i-sm"></i>Cennik</span>
+            <h2 class="h2 mt-4">Prosto: <span id="fee">10</span>% od sprzedaży. Nic więcej.</h2>
+            <p class="lead mt-4">Bez opłat za wystawienie, bez abonamentu i bez ukrytych kosztów. Prowizja pokrywa płatności, hosting plików, licencje i wsparcie.</p>
+            <ul class="stack-3 mt-6">
+              <li class="row gap-3"><span class="icon-box sm green"><i data-i="check" class="i-sm"></i></span><span>Nielimitowana liczba produktów i aktualizacji</span></li>
+              <li class="row gap-3"><span class="icon-box sm green"><i data-i="check" class="i-sm"></i></span><span>Pliki do <b>500 MB</b> na produkt</span></li>
+              <li class="row gap-3"><span class="icon-box sm green"><i data-i="check" class="i-sm"></i></span><span>Minimalna wypłata od <b id="min">50 zł</b></span></li>
+            </ul>
+          </div>
+          <div class="card card-pad card-glow calc reveal">
+            <div class="row between"><span class="strong">Kalkulator zarobków</span><span class="badge">na miesiąc</span></div>
+            <div class="mt-6"><div class="row between small"><span class="muted">Cena produktu</span><span class="strong num" id="p-v">79 zł</span></div><input id="p" type="range" min="5" max="300" step="1" value="79" class="mt-2" aria-label="Cena produktu"></div>
+            <div class="mt-4"><div class="row between small"><span class="muted">Sprzedaży miesięcznie</span><span class="strong num" id="n-v">40</span></div><input id="n" type="range" min="1" max="500" step="1" value="40" class="mt-2" aria-label="Liczba sprzedaży"></div>
+            <div class="divider mt-6 mb-6"></div>
+            <div class="xs subtle">Twój zarobek netto</div>
+            <div class="earn mt-1" id="earn">0 zł</div>
+            <div class="small subtle mt-1" id="earn-sub"></div>
+            <a href="/panel.html#/seller/join" class="btn btn-primary btn-lg btn-block mt-6">Zacznij sprzedawać</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-sm">
+      <div class="container">
+        <div class="section-head-center reveal"><h2 class="h2">Pierwsza sprzedaż w 10 minut</h2></div>
+        <div class="steps reveal">
+          <div class="step"><div class="step-n">01</div><h3>Otwórz sklep</h3><p>Załóż konto i nadaj nazwę swojemu sklepowi.</p></div>
+          <div class="step"><div class="step-n">02</div><h3>Dodaj produkt</h3><p>Opis, cena, okładka, galeria i plik do pobrania.</p></div>
+          <div class="step"><div class="step-n">03</div><h3>Podepnij licencję</h3><p>Wklej kilka linijek kodu z dokumentacji API.</p></div>
+          <div class="step"><div class="step-n">04</div><h3>Zarabiaj</h3><p>Śledź statystyki i wypłacaj środki z panelu.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-sm">
+      <div class="container"><div class="cta reveal">
+        <h2 class="h1">Gotowy, żeby zacząć?</h2>
+        <p class="lead mt-4">Dołącz do twórców, którzy sprzedają na Velorie.</p>
+        <div class="row center gap-3 wrap mt-8"><a href="/panel.html#/seller/join" class="btn btn-primary btn-lg">Otwórz sklep</a><a href="https://discord.gg/velorie" target="_blank" rel="noopener" class="btn btn-secondary btn-lg"><i data-i="discord" class="i-md"></i>Porozmawiaj z nami</a></div>
+      </div></div>
+    </section>
+  </main>
+  <div id="vs-footer"></div>
+</div>
+<script src="/assets/js/icons.js"></script>
+<script src="/assets/js/app.js"></script>
+<script>
+  VS.layout({ active: 'Twórcy' });
+  let fee = 10;
+  const $ = (id) => document.getElementById(id);
+  const calc = () => {
+    const p = Number($('p').value), n = Number($('n').value);
+    const gross = p * n, net = gross * (1 - fee / 100);
+    $('p-v').textContent = p + ' zł'; $('n-v').textContent = n;
+    $('earn').textContent = Math.round(net).toLocaleString('pl-PL') + ' zł';
+    $('earn-sub').textContent = `z ${gross.toLocaleString('pl-PL')} zł sprzedaży · prowizja ${fee}%`;
+  };
+  $('p').oninput = $('n').oninput = calc;
+  VS.api('/api/stats/public').then((s) => { fee = s.fee_percent; $('fee').textContent = fee; calc(); }).catch(calc);
+  calc();
+</script>
+</body>
+</html>
