@@ -1,0 +1,18 @@
+{
+  "name": "velorie-bot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bot Discord Velorie Market — licencje, sklep, tickety, weryfikacja.",
+  "type": "module",
+  "main": "src/index.js",
+  "engines": { "node": ">=20.9.0" },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.7",
+    "mongoose": "^8.9.0"
+  }
+}

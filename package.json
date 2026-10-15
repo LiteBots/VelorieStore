@@ -1,0 +1,38 @@
+{
+  "name": "velorie-market",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Velorie Market — marketplace pluginów, skryptów, map i interiorów dla Minecraft i FiveM.",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "prebuild": "node scripts/verify-files.mjs",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "seed": "tsx scripts/seed.ts",
+    "make-admin": "tsx scripts/make-admin.ts",
+    "gen-secrets": "node scripts/gen-secrets.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/jetbrains-mono": "^5.1.0",
+    "@fontsource-variable/plus-jakarta-sans": "^5.1.0",
+    "mongoose": "^8.9.0",
+    "next": "^15.5.0",
+    "next-auth": "^4.24.11",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "server-only": "^0.0.1",
+    "stripe": "^17.5.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
