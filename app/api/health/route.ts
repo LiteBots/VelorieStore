@@ -1,0 +1,5 @@
+// Healthcheck dla Railway: /api/health
+export const dynamic = 'force-dynamic';
+export function GET() {
+  return Response.json({ ok: true, ts: Date.now() });
+}
